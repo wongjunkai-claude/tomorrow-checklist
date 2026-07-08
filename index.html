@@ -310,8 +310,12 @@ const leafUnits = it => (it.children && it.children.length ? it.children : [it])
 const countLeaves = list => list.reduce((n,it)=>n+leafUnits(it).length,0);
 const countDoneLeaves = list => list.reduce((n,it)=>n+leafUnits(it).filter(u=>u.done).length,0);
 
-function tomorrow(){ const d=new Date(); d.setDate(d.getDate()+1); return d; }
-const dateKey = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+/* The "school day" rolls over at 08:00 Singapore time. Singapore is UTC+8 with no
+   daylight saving, so 08:00 SGT is exactly 00:00 UTC -> using UTC dates gives an
+   8am-SGT rollover precisely, and independent of the device's own timezone. */
+function today(){ const n=new Date(); return new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate())); }
+function tomorrow(){ const d=today(); d.setUTCDate(d.getUTCDate()+1); return d; }
+const dateKey = d => `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;
 
 function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
 function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
@@ -328,7 +332,7 @@ function eachDate(start,end){
 }
 async function refreshHolidays(){
   const cache=loadHolidays(), now=Date.now();
-  const y=new Date().getFullYear(), need=[y, y+1];
+  const y=new Date().getUTCFullYear(), need=[y, y+1];
   const have=(cache&&cache.years)||[];
   if(cache && (now-(cache.ts||0)<HOLIDAY_TTL) && need.every(yr=>have.indexOf(yr)>-1)) return;
   const dates={};
@@ -366,7 +370,7 @@ function load(){
       // New planning day: normally starts fresh. But when today is Saturday or
       // Sunday, carry forward any UNCHECKED homework from the previous session
       // (Fri -> Sat, then Sat -> Sun). Carried tasks arrive unchecked.
-      const dow = new Date().getDay();
+      const dow = new Date().getUTCDay();
       if(dow===6 || dow===0){
         const pc=p.checked||{}, ps=p.sub||{};
         Object.keys(ps).forEach(itId=>{
@@ -386,7 +390,7 @@ function load(){
     }
     return {...it, done: !!checked[it.id]};
   });
-  const dW=tomorrow(), tD=dW.getDay(), wk=(tD===0||tD===6);
+  const dW=tomorrow(), tD=dW.getUTCDay(), wk=(tD===0||tD===6);
   const holL=holidaySet(); const noSch = wk || !!holL[dateKey(dW)];
   const visSec=SECTIONS.filter(s=> !((s.id==='bring'||s.id==='uniform')&&noSch) && (!s.days || s.days.indexOf(tD)>-1)).map(s=>s.id);
   const act=state.items.filter(it=> visSec.indexOf(it.section)>-1 && (!it.days || it.days.indexOf(tD)>-1));
@@ -415,7 +419,7 @@ function removeBtn(it){
 
 function render(){
   const dT = tomorrow();
-  const tDay = dT.getDay();
+  const tDay = dT.getUTCDay();
   const wkend = (tDay===0 || tDay===6);
   const hol = holidaySet();
   const holTomorrow = !!hol[dateKey(dT)];
@@ -432,8 +436,8 @@ function render(){
   const total = countLeaves(activeItems), done = countDoneLeaves(activeItems);
   const allDone = total>0 && done===total;
   const pct = total ? Math.round(done/total*100) : 0;
-  const weekday = dT.toLocaleDateString(undefined,{weekday:'long'});
-  const longDate = dT.toLocaleDateString(undefined,{day:'numeric',month:'long',year:'numeric'});
+  const weekday = dT.toLocaleDateString(undefined,{weekday:'long', timeZone:'UTC'});
+  const longDate = dT.toLocaleDateString(undefined,{day:'numeric',month:'long',year:'numeric', timeZone:'UTC'});
 
   let h = '';
   h += `<header class="rst-header"><div class="rst-sun">${svg('sun',26,2.5)}</div>`
