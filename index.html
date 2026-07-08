@@ -257,6 +257,16 @@
   .rst-remove:hover{ background:#FFF3F3; color:#D64545; }
 }
 
+/* header: "Tomorrow" tag + today's calendar */
+.rst-head-main{ flex:1; min-width:0; }
+.rst-tag{ display:inline-block; background:var(--yellow); color:var(--navy); font-weight:800; font-size:.62rem; letter-spacing:.05em; text-transform:uppercase; padding:2px 8px; border-radius:999px; margin-right:8px; vertical-align:middle; }
+.rst-today{ flex:none; display:flex; flex-direction:column; align-items:center; gap:4px; }
+.rst-today-cap{ font-size:.6rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--yellow); }
+.rst-cal{ width:54px; border-radius:13px; overflow:hidden; background:#fff; display:flex; flex-direction:column; text-align:center; box-shadow:0 6px 14px -8px rgba(0,0,0,.45); }
+.rst-cal-top{ background:var(--yellow); color:var(--navy); font-family:'Fredoka',sans-serif; font-weight:700; font-size:.6rem; letter-spacing:.12em; padding:3px 0 2px; }
+.rst-cal-num{ color:var(--navy); font-family:'Fredoka',sans-serif; font-weight:700; font-size:1.55rem; line-height:1.05; padding-top:3px; }
+.rst-cal-dow{ color:var(--navy-soft); font-size:.58rem; font-weight:800; letter-spacing:.06em; text-transform:uppercase; padding:0 0 5px; }
+
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
 </style>
@@ -438,11 +448,18 @@ function render(){
   const pct = total ? Math.round(done/total*100) : 0;
   const weekday = dT.toLocaleDateString(undefined,{weekday:'long', timeZone:'UTC'});
   const longDate = dT.toLocaleDateString(undefined,{day:'numeric',month:'long',year:'numeric', timeZone:'UTC'});
+  const tdy = today();
+  const calMon = tdy.toLocaleDateString(undefined,{month:'short', timeZone:'UTC'}).toUpperCase();
+  const calNum = tdy.getUTCDate();
+  const calDow = tdy.toLocaleDateString(undefined,{weekday:'short', timeZone:'UTC'});
 
   let h = '';
   h += `<header class="rst-header"><div class="rst-sun">${svg('sun',26,2.5)}</div>`
-     + `<div><h1>${headerTitle}</h1>`
-     + `<p class="rst-date"><span class="rst-weekday">${esc(weekday)}</span><span class="rst-dot">&bull;</span>${esc(longDate)}</p></div></header>`;
+     + `<div class="rst-head-main"><h1>${headerTitle}</h1>`
+     + `<p class="rst-date"><span class="rst-tag">Tomorrow</span><span class="rst-weekday">${esc(weekday)}</span><span class="rst-dot">&bull;</span>${esc(longDate)}</p></div>`
+     + `<div class="rst-today"><span class="rst-today-cap">Today</span>`
+     + `<span class="rst-cal"><span class="rst-cal-top">${esc(calMon)}</span><span class="rst-cal-num">${calNum}</span><span class="rst-cal-dow">${esc(calDow)}</span></span></div>`
+     + `</header>`;
 
   if(allDone){
     h += `<div class="rst-celebrate pop">${svg('partyPopper',30,2.4)}<div><strong>Great job!</strong><span>${wkend?'Everything is done. Enjoy your day off!':'You are ready for school tomorrow!'}</span></div></div>`;
