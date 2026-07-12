@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1E2B50">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Ready for School">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -38,8 +40,10 @@
   font-family:'Fredoka',sans-serif; font-weight:700; font-size:1.42rem;
   line-height:1.1; margin:0; letter-spacing:.2px;
 }
-.rst-date{ margin:5px 0 0; font-size:.92rem; color:#D7DEF1; font-weight:700; }
-.rst-weekday{ color:var(--yellow); }
+.rst-date{ margin:6px 0 0; font-weight:700; display:flex; flex-direction:column; gap:3px; }
+.rst-dtop{ display:flex; align-items:center; min-width:0; }
+.rst-dbot{ color:#D7DEF1; font-size:.82rem; white-space:nowrap; }
+.rst-weekday{ color:var(--yellow); font-size:.95rem; }
 .rst-dot{ margin:0 7px; opacity:.6; }
 
 /* progress */
@@ -293,8 +297,108 @@
 .rst-profdel.warn{ background:#FFE3E3; }
 @media (hover:hover){ .rst-pchip:hover{ filter:brightness(0.97); } .rst-swatch:hover{ transform:scale(1.06); } }
 
+/* primary level selector */
+.rst-proflabel{ font-weight:800; font-size:.78rem; color:var(--navy-soft); text-transform:uppercase; letter-spacing:.04em; margin-top:2px; }
+.rst-levels{ display:flex; gap:8px; flex-wrap:wrap; }
+.rst-level{ flex:1; min-width:44px; padding:10px 0; border-radius:13px; border:2px solid var(--line); background:var(--cream); color:var(--navy); font:inherit; font-weight:800; cursor:pointer; }
+.rst-level.sel{ background:var(--navy); color:#fff; border-color:var(--navy); }
+@media (hover:hover){ .rst-level:hover{ border-color:#9DB0DE; } }
+
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
+
+/* edit mode: usual vs just-for-today tabs + skip control */
+.rst-tabs{ display:flex; gap:8px; margin:0 2px 8px; }
+.rst-tab{ flex:1; padding:11px; border-radius:14px; border:2px solid var(--line); background:#fff; color:var(--navy-soft); font:inherit; font-weight:800; cursor:pointer; }
+.rst-tab.on{ background:var(--navy); color:#fff; border-color:var(--navy); }
+.rst-edithint{ margin:0 4px 14px; font-size:.82rem; font-weight:700; color:var(--navy-soft); }
+.rst-skip{ position:absolute; top:-8px; right:-8px; z-index:2; width:34px; height:34px; border-radius:50%; cursor:pointer; background:#fff; color:#7a8398; display:grid; place-items:center; box-shadow:0 4px 12px -4px rgba(0,0,0,.3), 0 0 0 2px #E7E0D2 inset; }
+.rst-skip.on{ color:#2F8F5B; box-shadow:0 4px 12px -4px rgba(0,0,0,.3), 0 0 0 2px #BFE6CD inset; }
+.rst-card.is-skipped{ opacity:.5; }
+@media (hover:hover){ .rst-tab:hover{ border-color:#9DB0DE; } .rst-skip:hover{ color:var(--navy); } }
+
+/* per-item remove-scope prompt + wrapping add row */
+.rst-formrow{ flex-wrap:wrap; }
+.rst-askremove{ align-items:flex-start; }
+.rst-askrow{ display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+.rst-askbtn{ padding:9px 12px; border-radius:12px; border:2px solid var(--line); background:var(--cream); color:var(--navy); font:inherit; font-weight:800; font-size:.85rem; cursor:pointer; }
+.rst-askbtn.warn{ background:#FFE3E3; border-color:#F4C2C2; color:#C0392B; }
+.rst-askbtn.ghost{ background:#fff; color:var(--navy-soft); }
+@media (hover:hover){ .rst-askbtn:hover{ filter:brightness(0.97); } }
+
+.rst-subedit{ cursor:default; }
+
+/* hold-to-confirm */
+.rst-hold{ position:relative; overflow:hidden; }
+.rst-holdfill{ position:absolute; inset:0 auto 0 0; width:0; background:rgba(0,0,0,.16); transition:width .2s ease; z-index:0; pointer-events:none; }
+.rst-hold.holding .rst-holdfill{ width:100%; transition:width 1.2s linear; }
+.rst-holdlabel{ position:relative; z-index:1; display:inline-flex; align-items:center; justify-content:center; gap:6px; }
+
+/* help button + sheet */
+.rst-help{ margin-left:auto; display:inline-flex; align-items:center; gap:6px; padding:8px 13px; border-radius:999px; border:2px solid var(--line); background:#fff; color:var(--navy-soft); font:inherit; font-weight:800; font-size:.9rem; cursor:pointer; }
+.rst-overlay{ position:fixed; inset:0; background:rgba(30,43,80,.5); z-index:60; display:flex; align-items:flex-end; justify-content:center; }
+.rst-sheet{ background:#fff; width:100%; max-width:560px; max-height:88vh; overflow:auto; border-radius:24px 24px 0 0; padding:18px 18px 26px; }
+.rst-sheet-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; position:sticky; top:0; background:#fff; }
+.rst-sheet-head h2{ font-family:'Fredoka',sans-serif; font-weight:700; font-size:1.3rem; margin:0; color:var(--navy); }
+.rst-sheet-x{ flex:none; width:38px; height:38px; border-radius:50%; border:none; background:var(--cream); color:var(--navy); display:grid; place-items:center; cursor:pointer; }
+.rst-help-item{ padding:11px 2px; border-top:1px solid var(--line); display:flex; flex-direction:column; gap:3px; }
+.rst-help-item:first-child{ border-top:none; }
+.rst-help-item b{ font-family:'Fredoka',sans-serif; font-weight:600; color:var(--navy); font-size:1.02rem; }
+.rst-help-item span{ color:var(--navy-soft); font-weight:600; font-size:.9rem; line-height:1.35; }
+@media(min-width:560px){ .rst-overlay{ align-items:center; padding:16px; } .rst-sheet{ border-radius:24px; } }
+@media(hover:hover){ .rst-help:hover{ border-color:#9DB0DE; color:var(--navy); } .rst-sheet-x:hover{ background:#EFE9DC; } }
+
+/* add-to-home-screen nudge */
+.rst-a2hs-steps{ margin-top:8px; font-size:.84rem; font-weight:700; color:var(--navy); line-height:1.55; }
+.rst-a2hs-steps b{ font-family:'Fredoka',sans-serif; font-weight:600; }
+
+/* a2hs "don't show again" (30-day snooze) */
+
+.rst-holdhint{ font-style:normal; font-weight:800; font-size:.66rem; opacity:.7; text-transform:uppercase; letter-spacing:.06em; margin-left:6px; }
+
+/* empty Bring prompt (Sat/Sun/holiday) */
+.rst-bring-empty{ display:flex; align-items:center; gap:12px; padding:16px; border:2px dashed #D9D2C4; border-radius:18px; color:var(--navy-soft); font-weight:700; font-size:.92rem; line-height:1.35; background:rgba(255,255,255,.5); }
+.rst-bring-empty svg{ flex:none; color:#B9C0D4; }
+
+
+
+
+/* HBL button — sits to the left of the School Day / Holiday switch; subtle when off */
+.rst-hbl{ margin-right:auto; display:inline-flex; align-items:center; gap:5px; padding:6px 11px; border-radius:999px; border:2px solid var(--line); background:#fff; color:var(--navy-soft); font:inherit; font-weight:800; font-size:.74rem; letter-spacing:.03em; cursor:pointer; transition:all .2s ease; }
+.rst-hbl.on{ background:var(--navy); border-color:var(--navy); color:#fff; }
+@media(hover:hover){ .rst-hbl:hover{ border-color:#9DB0DE; color:var(--navy); } .rst-hbl.on:hover{ background:var(--navy-2); color:#fff; } }
+
+/* School / Holiday switch — sits above the progress bar */
+/* Fixed row height so the switch sits identically whether or not the HBL button
+   is present (holiday mode hides it), keeping the 18px gaps visually equal. */
+.rst-holbar{ display:flex; align-items:center; justify-content:flex-end; gap:10px; margin:18px 4px 0; min-height:34px; }
+.rst-hname{ display:block; }
+/* Equal 18px gap above and below the switch, whatever follows it
+   (progress bar normally, celebration block when everything is done). */
+.rst-holbar + *{ margin-top:18px !important; }
+.rst-holbar-lab{ font-size:.8rem; font-weight:800; color:var(--navy-soft); letter-spacing:.02em; }
+.rst-switch{ flex:none; width:46px; height:27px; border-radius:999px; border:none; padding:0; background:#D9DEEC; position:relative; cursor:pointer; transition:background .22s ease; }
+.rst-switch.on{ background:#E9A82A; }
+.rst-knob{ position:absolute; top:2px; left:2px; width:23px; height:23px; border-radius:50%; background:#fff; box-shadow:0 2px 5px rgba(0,0,0,.25); transition:transform .22s cubic-bezier(.3,.8,.4,1); }
+.rst-switch.on .rst-knob{ transform:translateX(19px); }
+
+/* centred modal dialogs (name prompt, add-to-home-screen) */
+.rst-modal{ position:relative; background:#fff; width:100%; max-width:420px; border-radius:24px; padding:24px 20px 20px; box-shadow:0 24px 60px -20px rgba(30,43,80,.5); display:flex; flex-direction:column; gap:12px; }
+.rst-modal h2{ font-family:'Fredoka',sans-serif; font-weight:700; font-size:1.35rem; color:var(--navy); margin:0; padding-right:32px; }
+.rst-modal p{ margin:0; font-size:.92rem; font-weight:700; color:var(--navy-soft); line-height:1.45; }
+.rst-modal-btns{ display:flex; gap:10px; margin-top:4px; }
+.rst-modal-btns > *{ flex:1; justify-content:center; }
+.rst-modal-x{ position:absolute; top:14px; right:14px; width:34px; height:34px; border-radius:50%; border:none; background:var(--cream); color:var(--navy); display:grid; place-items:center; cursor:pointer; }
+.rst-overlay{ padding:16px; align-items:center; }
+@media(hover:hover){ .rst-modal-x:hover{ background:#EFE9DC; } }
+
+/* "Don't show me again" under the Add to Home Screen button */
+.rst-a2hs-never{ align-self:center; background:none; border:none; color:var(--navy-soft); font:inherit; font-weight:800; font-size:.82rem; text-decoration:underline; cursor:pointer; padding:2px; margin-top:2px; }
+.rst-a2hs-note{ font-size:.8rem !important; opacity:.85; }
+
+/* P1-P6 always on one line (no wrapping, even on narrow phones) */
+.rst-levels-row{ flex-wrap:nowrap; gap:6px; }
+.rst-levels-row .rst-level{ flex:1 1 0; min-width:0; padding:10px 0; font-size:.9rem; }
 </style>
 </head>
 <body>
@@ -303,7 +407,7 @@ html,body{margin:0;padding:0}
   <div id="app" class="rst-app"></div>
 </div>
 <script>
-const ICONS = {"sun": "<circle cx=\"12\" cy=\"12\" r=\"4\" /> <path d=\"M12 2v2\" /> <path d=\"M12 20v2\" /> <path d=\"m4.93 4.93 1.41 1.41\" /> <path d=\"m17.66 17.66 1.41 1.41\" /> <path d=\"M2 12h2\" /> <path d=\"M20 12h2\" /> <path d=\"m6.34 17.66-1.41 1.41\" /> <path d=\"m19.07 4.93-1.41 1.41\" />", "partyPopper": "<path d=\"M5.8 11.3 2 22l10.7-3.79\" /> <path d=\"M4 3h.01\" /> <path d=\"M22 8h.01\" /> <path d=\"M15 2h.01\" /> <path d=\"M22 20h.01\" /> <path d=\"m22 2-2.24.75a2.9 2.9 0 0 0-1.96 3.12c.1.86-.57 1.63-1.45 1.63h-.38c-.86 0-1.6.6-1.76 1.44L14 10\" /> <path d=\"m22 13-.82-.33c-.86-.34-1.82.2-1.98 1.11c-.11.7-.72 1.22-1.43 1.22H17\" /> <path d=\"m11 2 .33.82c.34.86-.2 1.82-1.11 1.98C9.52 4.9 9 5.52 9 6.23V7\" /> <path d=\"M11 13c1.93 1.93 2.83 4.17 2 5-.83.83-3.07-.07-5-2-1.93-1.93-2.83-4.17-2-5 .83-.83 3.07.07 5 2Z\" />", "check": "<path d=\"M20 6 9 17l-5-5\" />", "plus": "<path d=\"M5 12h14\" /> <path d=\"M12 5v14\" />", "trash2": "<path d=\"M10 11v6\" /> <path d=\"M14 11v6\" /> <path d=\"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6\" /> <path d=\"M3 6h18\" /> <path d=\"M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2\" />", "rotateCcw": "<path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\" /> <path d=\"M3 3v5h5\" />", "pencil": "<path d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\" /> <path d=\"m15 5 4 4\" />", "x": "<path d=\"M18 6 6 18\" /> <path d=\"m6 6 12 12\" />", "backpack": "<path d=\"M4 10a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z\" /> <path d=\"M8 10h8\" /> <path d=\"M8 18h8\" /> <path d=\"M8 22v-6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v6\" /> <path d=\"M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2\" />", "graduationCap": "<path d=\"M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z\" /> <path d=\"M22 10v6\" /> <path d=\"M6 12.5V16a6 3 0 0 0 12 0v-3.5\" />", "pencilRuler": "<path d=\"M13 7 8.7 2.7a2.41 2.41 0 0 0-3.4 0L2.7 5.3a2.41 2.41 0 0 0 0 3.4L7 13\" /> <path d=\"m8 6 2-2\" /> <path d=\"m18 16 2-2\" /> <path d=\"m17 11 4.3 4.3c.94.94.94 2.46 0 3.4l-2.6 2.6c-.94.94-2.46.94-3.4 0L11 17\" /> <path d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\" /> <path d=\"m15 5 4 4\" />", "palette": "<path d=\"M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z\" /> <circle cx=\"13.5\" cy=\"6.5\" r=\".5\" fill=\"currentColor\" /> <circle cx=\"17.5\" cy=\"10.5\" r=\".5\" fill=\"currentColor\" /> <circle cx=\"6.5\" cy=\"12.5\" r=\".5\" fill=\"currentColor\" /> <circle cx=\"8.5\" cy=\"7.5\" r=\".5\" fill=\"currentColor\" />", "bookMarked": "<path d=\"M10 2v8l3-3 3 3V2\" /> <path d=\"M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20\" />", "bookOpen": "<path d=\"M12 7v14\" /> <path d=\"M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z\" />", "thermometer": "<path d=\"M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z\" />", "presentation": "<path d=\"M2 3h20\" /> <path d=\"M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3\" /> <path d=\"m7 21 5-5 5 5\" />", "sandwich": "<path d=\"m2.37 11.223 8.372-6.777a2 2 0 0 1 2.516 0l8.371 6.777\" /> <path d=\"M21 15a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-5.25\" /> <path d=\"M3 15a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h9\" /> <path d=\"m6.67 15 6.13 4.6a2 2 0 0 0 2.8-.4l3.15-4.2\" /> <rect width=\"20\" height=\"4\" x=\"2\" y=\"11\" rx=\"1\" />", "notebook": "<path d=\"M2 6h4\" /> <path d=\"M2 10h4\" /> <path d=\"M2 14h4\" /> <path d=\"M2 18h4\" /> <rect width=\"16\" height=\"20\" x=\"4\" y=\"2\" rx=\"2\" /> <path d=\"M16 2v20\" />", "spellCheck": "<path d=\"m6 16 6-12 6 12\" /> <path d=\"M8 12h8\" /> <path d=\"m16 20 2 2 4-4\" />", "languages": "<path d=\"m5 8 6 6\" /> <path d=\"m4 14 6-6 2-3\" /> <path d=\"M2 5h12\" /> <path d=\"M7 2h1\" /> <path d=\"m22 22-5-10-5 10\" /> <path d=\"M14 18h6\" />", "glassWater": "<path d=\"M5.116 4.104A1 1 0 0 1 6.11 3h11.78a1 1 0 0 1 .994 1.105L17.19 20.21A2 2 0 0 1 15.2 22H8.8a2 2 0 0 1-2-1.79z\" /> <path d=\"M6 12a5 5 0 0 1 6 0 5 5 0 0 0 6 0\" />", "folder": "<path d=\"M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z\" />", "shirt": "<path d=\"M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z\" />", "clipboardCheck": "<rect width=\"8\" height=\"4\" x=\"8\" y=\"2\" rx=\"1\" ry=\"1\" /> <path d=\"M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2\" /> <path d=\"m9 14 2 2 4-4\" />", "library": "<path d=\"m16 6 4 14\" /> <path d=\"M12 6v14\" /> <path d=\"M8 8v12\" /> <path d=\"M4 4v16\" />", "apple": "<path d=\"M12 6.528V3a1 1 0 0 1 1-1h0\" /> <path d=\"M18.237 21A15 15 0 0 0 22 11a6 6 0 0 0-10-4.472A6 6 0 0 0 2 11a15.1 15.1 0 0 0 3.763 10 3 3 0 0 0 3.648.648 5.5 5.5 0 0 1 5.178 0A3 3 0 0 0 18.237 21\" />", "dumbbell": "<path d=\"M17.596 12.768a2 2 0 1 0 2.829-2.829l-1.768-1.767a2 2 0 0 0 2.828-2.829l-2.828-2.828a2 2 0 0 0-2.829 2.828l-1.767-1.768a2 2 0 1 0-2.829 2.829z\" /> <path d=\"m2.5 21.5 1.4-1.4\" /> <path d=\"m20.1 3.9 1.4-1.4\" /> <path d=\"M5.343 21.485a2 2 0 1 0 2.829-2.828l1.767 1.768a2 2 0 1 0 2.829-2.829l-6.364-6.364a2 2 0 1 0-2.829 2.829l1.768 1.767a2 2 0 0 0-2.828 2.829z\" /> <path d=\"m9.6 14.4 4.8-4.8\" />", "footprints": "<path d=\"M4 16v-2.38C4 11.5 2.97 10.5 3 8c.03-2.72 1.49-6 4.5-6C9.37 2 10 3.8 10 5.5c0 3.11-2 5.66-2 8.68V16a2 2 0 1 1-4 0Z\" /> <path d=\"M20 20v-2.38c0-2.12 1.03-3.12 1-5.62-.03-2.72-1.49-6-4.5-6C14.63 6 14 7.8 14 9.5c0 3.11 2 5.66 2 8.68V20a2 2 0 1 0 4 0Z\" /> <path d=\"M16 17h4\" /> <path d=\"M4 13h4\" />", "umbrella": "<path d=\"M12 13v7a2 2 0 0 0 4 0\" /> <path d=\"M12 2v2\" /> <path d=\"M20.992 13a1 1 0 0 0 .97-1.274 10.284 10.284 0 0 0-19.923 0A1 1 0 0 0 3 13z\" />", "glasses": "<circle cx=\"6\" cy=\"15\" r=\"4\" /> <circle cx=\"18\" cy=\"15\" r=\"4\" /> <path d=\"M14 15a2 2 0 0 0-2-2 2 2 0 0 0-2 2\" /> <path d=\"M2.5 13 5 7c.7-1.3 1.4-2 3-2\" /> <path d=\"M21.5 13 19 7c-.7-1.3-1.5-2-3-2\" />", "scissors": "<circle cx=\"6\" cy=\"6\" r=\"3\" /> <path d=\"M8.12 8.12 12 12\" /> <path d=\"M20 4 8.12 15.88\" /> <circle cx=\"6\" cy=\"18\" r=\"3\" /> <path d=\"M14.8 14.8 20 20\" />", "calculator": "<rect width=\"16\" height=\"20\" x=\"4\" y=\"2\" rx=\"2\" /> <line x1=\"8\" x2=\"16\" y1=\"6\" y2=\"6\" /> <line x1=\"16\" x2=\"16\" y1=\"14\" y2=\"18\" /> <path d=\"M16 10h.01\" /> <path d=\"M12 10h.01\" /> <path d=\"M8 10h.01\" /> <path d=\"M12 14h.01\" /> <path d=\"M8 14h.01\" /> <path d=\"M12 18h.01\" /> <path d=\"M8 18h.01\" />", "music": "<path d=\"M9 18V5l12-2v13\" /> <circle cx=\"6\" cy=\"18\" r=\"3\" /> <circle cx=\"18\" cy=\"16\" r=\"3\" />", "map": "<path d=\"M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z\" /> <path d=\"M15 5.764v15\" /> <path d=\"M9 3.236v15\" />", "bus": "<path d=\"M8 6v6\" /> <path d=\"M15 6v6\" /> <path d=\"M2 12h19.6\" /> <path d=\"M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4a2 2 0 0 0-2 2v10h3\" /> <circle cx=\"7\" cy=\"18\" r=\"2\" /> <path d=\"M9 18h5\" /> <circle cx=\"16\" cy=\"18\" r=\"2\" />", "cookie": "<path d=\"M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5\" /> <path d=\"M8.5 8.5v.01\" /> <path d=\"M16 15.5v.01\" /> <path d=\"M12 12v.01\" /> <path d=\"M11 17v.01\" /> <path d=\"M7 14v.01\" />", "ruler": "<path d=\"M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z\" /> <path d=\"m14.5 12.5 2-2\" /> <path d=\"m11.5 9.5 2-2\" /> <path d=\"m8.5 6.5 2-2\" /> <path d=\"m17.5 15.5 2-2\" />", "waterBottle": "<path d=\"M10 2h4a1 1 0 0 1 1 1v2h-6V3a1 1 0 0 1 1-1z\" /> <path d=\"M10 5v2\" /> <path d=\"M14 5v2\" /> <path d=\"M8 9a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v10a3 3 0 0 1-3 3h-2a3 3 0 0 1-3-3z\" /> <path d=\"M8 12h8\" />", "volume2": "<svg class=\"lucide lucide-volume-2\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\" /> <path d=\"M16 9a5 5 0 0 1 0 6\" /> <path d=\"M19.364 18.364a9 9 0 0 0 0-12.728\" />", "volumeX": "<svg class=\"lucide lucide-volume-x\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\" /> <line x1=\"22\" x2=\"16\" y1=\"9\" y2=\"15\" /> <line x1=\"16\" x2=\"22\" y1=\"9\" y2=\"15\" />"};
+const ICONS = {"house": "<path d=\"M3 10.5 12 3l9 7.5\" /> <path d=\"M5 9.5V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.5\" /> <path d=\"M9.5 21v-6h5v6\" />", "info": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <path d=\"M12 16v-4\" /> <path d=\"M12 8h.01\" />", "sun": "<circle cx=\"12\" cy=\"12\" r=\"4\" /> <path d=\"M12 2v2\" /> <path d=\"M12 20v2\" /> <path d=\"m4.93 4.93 1.41 1.41\" /> <path d=\"m17.66 17.66 1.41 1.41\" /> <path d=\"M2 12h2\" /> <path d=\"M20 12h2\" /> <path d=\"m6.34 17.66-1.41 1.41\" /> <path d=\"m19.07 4.93-1.41 1.41\" />", "partyPopper": "<path d=\"M5.8 11.3 2 22l10.7-3.79\" /> <path d=\"M4 3h.01\" /> <path d=\"M22 8h.01\" /> <path d=\"M15 2h.01\" /> <path d=\"M22 20h.01\" /> <path d=\"m22 2-2.24.75a2.9 2.9 0 0 0-1.96 3.12c.1.86-.57 1.63-1.45 1.63h-.38c-.86 0-1.6.6-1.76 1.44L14 10\" /> <path d=\"m22 13-.82-.33c-.86-.34-1.82.2-1.98 1.11c-.11.7-.72 1.22-1.43 1.22H17\" /> <path d=\"m11 2 .33.82c.34.86-.2 1.82-1.11 1.98C9.52 4.9 9 5.52 9 6.23V7\" /> <path d=\"M11 13c1.93 1.93 2.83 4.17 2 5-.83.83-3.07-.07-5-2-1.93-1.93-2.83-4.17-2-5 .83-.83 3.07.07 5 2Z\" />", "check": "<path d=\"M20 6 9 17l-5-5\" />", "plus": "<path d=\"M5 12h14\" /> <path d=\"M12 5v14\" />", "trash2": "<path d=\"M10 11v6\" /> <path d=\"M14 11v6\" /> <path d=\"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6\" /> <path d=\"M3 6h18\" /> <path d=\"M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2\" />", "rotateCcw": "<path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\" /> <path d=\"M3 3v5h5\" />", "pencil": "<path d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\" /> <path d=\"m15 5 4 4\" />", "x": "<path d=\"M18 6 6 18\" /> <path d=\"m6 6 12 12\" />", "backpack": "<path d=\"M4 10a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z\" /> <path d=\"M8 10h8\" /> <path d=\"M8 18h8\" /> <path d=\"M8 22v-6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v6\" /> <path d=\"M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2\" />", "graduationCap": "<path d=\"M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z\" /> <path d=\"M22 10v6\" /> <path d=\"M6 12.5V16a6 3 0 0 0 12 0v-3.5\" />", "pencilRuler": "<path d=\"M13 7 8.7 2.7a2.41 2.41 0 0 0-3.4 0L2.7 5.3a2.41 2.41 0 0 0 0 3.4L7 13\" /> <path d=\"m8 6 2-2\" /> <path d=\"m18 16 2-2\" /> <path d=\"m17 11 4.3 4.3c.94.94.94 2.46 0 3.4l-2.6 2.6c-.94.94-2.46.94-3.4 0L11 17\" /> <path d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\" /> <path d=\"m15 5 4 4\" />", "palette": "<path d=\"M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z\" /> <circle cx=\"13.5\" cy=\"6.5\" r=\".5\" fill=\"currentColor\" /> <circle cx=\"17.5\" cy=\"10.5\" r=\".5\" fill=\"currentColor\" /> <circle cx=\"6.5\" cy=\"12.5\" r=\".5\" fill=\"currentColor\" /> <circle cx=\"8.5\" cy=\"7.5\" r=\".5\" fill=\"currentColor\" />", "bookMarked": "<path d=\"M10 2v8l3-3 3 3V2\" /> <path d=\"M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20\" />", "bookOpen": "<path d=\"M12 7v14\" /> <path d=\"M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z\" />", "thermometer": "<path d=\"M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z\" />", "presentation": "<path d=\"M2 3h20\" /> <path d=\"M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3\" /> <path d=\"m7 21 5-5 5 5\" />", "sandwich": "<path d=\"m2.37 11.223 8.372-6.777a2 2 0 0 1 2.516 0l8.371 6.777\" /> <path d=\"M21 15a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-5.25\" /> <path d=\"M3 15a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h9\" /> <path d=\"m6.67 15 6.13 4.6a2 2 0 0 0 2.8-.4l3.15-4.2\" /> <rect width=\"20\" height=\"4\" x=\"2\" y=\"11\" rx=\"1\" />", "notebook": "<path d=\"M2 6h4\" /> <path d=\"M2 10h4\" /> <path d=\"M2 14h4\" /> <path d=\"M2 18h4\" /> <rect width=\"16\" height=\"20\" x=\"4\" y=\"2\" rx=\"2\" /> <path d=\"M16 2v20\" />", "spellCheck": "<path d=\"m6 16 6-12 6 12\" /> <path d=\"M8 12h8\" /> <path d=\"m16 20 2 2 4-4\" />", "languages": "<path d=\"m5 8 6 6\" /> <path d=\"m4 14 6-6 2-3\" /> <path d=\"M2 5h12\" /> <path d=\"M7 2h1\" /> <path d=\"m22 22-5-10-5 10\" /> <path d=\"M14 18h6\" />", "glassWater": "<path d=\"M5.116 4.104A1 1 0 0 1 6.11 3h11.78a1 1 0 0 1 .994 1.105L17.19 20.21A2 2 0 0 1 15.2 22H8.8a2 2 0 0 1-2-1.79z\" /> <path d=\"M6 12a5 5 0 0 1 6 0 5 5 0 0 0 6 0\" />", "folder": "<path d=\"M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z\" />", "shirt": "<path d=\"M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z\" />", "clipboardCheck": "<rect width=\"8\" height=\"4\" x=\"8\" y=\"2\" rx=\"1\" ry=\"1\" /> <path d=\"M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2\" /> <path d=\"m9 14 2 2 4-4\" />", "library": "<path d=\"m16 6 4 14\" /> <path d=\"M12 6v14\" /> <path d=\"M8 8v12\" /> <path d=\"M4 4v16\" />", "apple": "<path d=\"M12 6.528V3a1 1 0 0 1 1-1h0\" /> <path d=\"M18.237 21A15 15 0 0 0 22 11a6 6 0 0 0-10-4.472A6 6 0 0 0 2 11a15.1 15.1 0 0 0 3.763 10 3 3 0 0 0 3.648.648 5.5 5.5 0 0 1 5.178 0A3 3 0 0 0 18.237 21\" />", "dumbbell": "<path d=\"M17.596 12.768a2 2 0 1 0 2.829-2.829l-1.768-1.767a2 2 0 0 0 2.828-2.829l-2.828-2.828a2 2 0 0 0-2.829 2.828l-1.767-1.768a2 2 0 1 0-2.829 2.829z\" /> <path d=\"m2.5 21.5 1.4-1.4\" /> <path d=\"m20.1 3.9 1.4-1.4\" /> <path d=\"M5.343 21.485a2 2 0 1 0 2.829-2.828l1.767 1.768a2 2 0 1 0 2.829-2.829l-6.364-6.364a2 2 0 1 0-2.829 2.829l1.768 1.767a2 2 0 0 0-2.828 2.829z\" /> <path d=\"m9.6 14.4 4.8-4.8\" />", "footprints": "<path d=\"M4 16v-2.38C4 11.5 2.97 10.5 3 8c.03-2.72 1.49-6 4.5-6C9.37 2 10 3.8 10 5.5c0 3.11-2 5.66-2 8.68V16a2 2 0 1 1-4 0Z\" /> <path d=\"M20 20v-2.38c0-2.12 1.03-3.12 1-5.62-.03-2.72-1.49-6-4.5-6C14.63 6 14 7.8 14 9.5c0 3.11 2 5.66 2 8.68V20a2 2 0 1 0 4 0Z\" /> <path d=\"M16 17h4\" /> <path d=\"M4 13h4\" />", "umbrella": "<path d=\"M12 13v7a2 2 0 0 0 4 0\" /> <path d=\"M12 2v2\" /> <path d=\"M20.992 13a1 1 0 0 0 .97-1.274 10.284 10.284 0 0 0-19.923 0A1 1 0 0 0 3 13z\" />", "glasses": "<circle cx=\"6\" cy=\"15\" r=\"4\" /> <circle cx=\"18\" cy=\"15\" r=\"4\" /> <path d=\"M14 15a2 2 0 0 0-2-2 2 2 0 0 0-2 2\" /> <path d=\"M2.5 13 5 7c.7-1.3 1.4-2 3-2\" /> <path d=\"M21.5 13 19 7c-.7-1.3-1.5-2-3-2\" />", "scissors": "<circle cx=\"6\" cy=\"6\" r=\"3\" /> <path d=\"M8.12 8.12 12 12\" /> <path d=\"M20 4 8.12 15.88\" /> <circle cx=\"6\" cy=\"18\" r=\"3\" /> <path d=\"M14.8 14.8 20 20\" />", "calculator": "<rect width=\"16\" height=\"20\" x=\"4\" y=\"2\" rx=\"2\" /> <line x1=\"8\" x2=\"16\" y1=\"6\" y2=\"6\" /> <line x1=\"16\" x2=\"16\" y1=\"14\" y2=\"18\" /> <path d=\"M16 10h.01\" /> <path d=\"M12 10h.01\" /> <path d=\"M8 10h.01\" /> <path d=\"M12 14h.01\" /> <path d=\"M8 14h.01\" /> <path d=\"M12 18h.01\" /> <path d=\"M8 18h.01\" />", "music": "<path d=\"M9 18V5l12-2v13\" /> <circle cx=\"6\" cy=\"18\" r=\"3\" /> <circle cx=\"18\" cy=\"16\" r=\"3\" />", "map": "<path d=\"M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z\" /> <path d=\"M15 5.764v15\" /> <path d=\"M9 3.236v15\" />", "bus": "<path d=\"M8 6v6\" /> <path d=\"M15 6v6\" /> <path d=\"M2 12h19.6\" /> <path d=\"M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4a2 2 0 0 0-2 2v10h3\" /> <circle cx=\"7\" cy=\"18\" r=\"2\" /> <path d=\"M9 18h5\" /> <circle cx=\"16\" cy=\"18\" r=\"2\" />", "cookie": "<path d=\"M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5\" /> <path d=\"M8.5 8.5v.01\" /> <path d=\"M16 15.5v.01\" /> <path d=\"M12 12v.01\" /> <path d=\"M11 17v.01\" /> <path d=\"M7 14v.01\" />", "ruler": "<path d=\"M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z\" /> <path d=\"m14.5 12.5 2-2\" /> <path d=\"m11.5 9.5 2-2\" /> <path d=\"m8.5 6.5 2-2\" /> <path d=\"m17.5 15.5 2-2\" />", "waterBottle": "<path d=\"M10 2h4a1 1 0 0 1 1 1v2h-6V3a1 1 0 0 1 1-1z\" /> <path d=\"M10 5v2\" /> <path d=\"M14 5v2\" /> <path d=\"M8 9a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v10a3 3 0 0 1-3 3h-2a3 3 0 0 1-3-3z\" /> <path d=\"M8 12h8\" />", "volume2": "<svg class=\"lucide lucide-volume-2\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\" /> <path d=\"M16 9a5 5 0 0 1 0 6\" /> <path d=\"M19.364 18.364a9 9 0 0 0 0-12.728\" />", "volumeX": "<svg class=\"lucide lucide-volume-x\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\" /> <line x1=\"22\" x2=\"16\" y1=\"9\" y2=\"15\" /> <line x1=\"16\" x2=\"22\" y1=\"9\" y2=\"15\" />"};
 const UI = new Set(['sun','partyPopper','check','plus','trash2','rotateCcw','pencil','x']);
 const PICKER_ICONS = Object.keys(ICONS).filter(k=>!UI.has(k));
 
@@ -381,12 +485,193 @@ function stripForSave(it){
   if(children) return {...rest, children: children.map(c=>{ const {done,...cc}=c; return cc; })};
   return rest;
 }
+/* Effective primary level = chosen level advanced by whole calendar years since it was set,
+   capped at P6 (and never below P1). Returns 0 when no level is set. */
+function effLevel(p){
+  if(!p || !p.level) return 0;
+  const y=sgToday().getUTCFullYear();
+  return Math.max(1, Math.min(6, p.level + (y - (p.levelYear||y))));
+}
+/* Level-based visibility: Coloured Pencils are dropped from P4 upward. */
+function levelOk(it, lvl){ if(lvl>=4 && it.id==='colour') return false; return true; }
+/* Spelling practice doesn't apply during the March / June / September / year-end
+   school vacations (no spelling is set then). */
+const VACATION_HIDE=['engspell','mtspell'];
+function vacationOk(it, d, lvl){
+  if(VACATION_HIDE.indexOf(it.id)<0) return true;
+  return !inTermVacation(d, lvl);
+}
+/* True only for the scheduled term vacations (not weekends, single-day holidays or HBL). */
+function inTermVacation(d, lvl){
+  const y=d.getUTCFullYear(), sy=schoolYear(y), t=d.getTime();
+  if(t > sy.t1End.getTime() && t < sy.t2Start.getTime()) return true;  // March
+  if(t > sy.t2End.getTime() && t < sy.t3Start.getTime()) return true;  // June
+  if(t > sy.t3End.getTime() && t < sy.t4Start.getTime()) return true;  // September
+  if(t > sy.t4End.getTime()) return true;                              // year-end -> 31 Dec
+  if(t < levelStartDay(y, lvl||1).getTime()) return true;              // before school starts
+  return false;
+}
+/* Whether tomorrow is a non-school day (weekend or holiday) — used for the uniform gate. */
+function curLevel(){ try{ return effLevel(curProfile())||1; }catch(e){ return 1; } }
+function noSchoolTomorrow(){ return isNoSchoolDay(tomorrow(), curLevel()); }
+function bringBucket(){
+  const d=tomorrow(), lvl=curLevel(), t=dayType(d, lvl);
+  if(isHBLDay(d, lvl)) return 'hbl';                // HBL has its own bring list
+  if(t==='school') return 'weekday';
+  const dow=d.getUTCDay();                          // holiday: split by which kind of day
+  if(dow===6) return 'sat';
+  if(dow===0) return 'sun';
+  return 'hol';
+}
+/* Which Bring bucket tomorrow falls into. Saturday/Sunday take priority over holiday,
+   so a holiday on a weekend uses that day's list; a weekday holiday has its own bucket. */
+function bucketLabel(b){ return b==='sat'?'Saturday':b==='sun'?'Sunday':b==='hol'?'holiday':b==='hbl'?'home-based learning':'weekday'; }
+/* Bring items belong to one bucket (default 'weekday'); each shows only on its kind of day. */
+function itemApplies(it, tDay, bucket){
+  if(it.days) return it.days.indexOf(tDay)>-1;
+  if(it.section==='bring'){
+    if(it.bucket) return it.bucket===bucket;
+    if(it.weekend) return bucket!=='weekday'; // legacy items from the earlier 2-bucket version
+    return bucket==='weekday';
+  }
+  return true;
+}
 
 /* ---------- Singapore public holidays: auto-fetched year on year, cached for
    offline use, with graceful fallback. No file or human maintenance, ever. ---------- */
 const HOLIDAY_TTL = 7*24*3600*1000; // re-check at most weekly
 function loadHolidays(){ try{ const r=lsGet('rst:ph'); return r?JSON.parse(r):null; }catch(e){ return null; } }
 function holidaySet(){ const h=loadHolidays(); return (h&&h.dates)?h.dates:{}; }
+
+/* ---------- MOE school calendar (computed; no annual maintenance) ----------
+   Anchor: if 2 Jan falls Mon/Tue it is in Week 1; if Wed/Thu/Fri those days are
+   "Week 0" and Week 1 starts the following Monday; if Sat/Sun, school starts the
+   next Monday (= Week 1). Everything else cascades from that Week-1 Monday (M1).  */
+const DAY=86400000;
+function addDays(d,n){ return new Date(d.getTime()+n*DAY); }
+function week1Monday(year){
+  const jan2=new Date(Date.UTC(year,0,2)); const dow=jan2.getUTCDay(); // 0 Sun .. 6 Sat
+  if(dow===1) return jan2;                     // Mon 2 Jan -> Week 1 starts 2 Jan
+  if(dow===2) return addDays(jan2,-1);         // Tue 2 Jan -> that week is Week 1 (Mon = 1 Jan)
+  if(dow>=3 && dow<=5) return addDays(jan2, 8-dow); // Wed/Thu/Fri -> Week 0; next Monday
+  if(dow===6) return addDays(jan2,2);          // Sat -> Mon 4 Jan
+  return addDays(jan2,1);                      // Sun -> Mon 3 Jan
+}
+/* School year structure from M1: T1 10w, Mar break 1w, T2 10w, Jun break 4w,
+   T3 10w, Sep break 1w, T4 10w, then year-end break to 31 Dec. */
+function schoolYear(year){
+  const M1=week1Monday(year);
+  // First school day: 2 Jan, or the next weekday if 2 Jan is a weekend. In Week-0
+  // years this precedes M1; in Mon/Tue years it is on/after M1.
+  const jan2=new Date(Date.UTC(year,0,2)); const j2d=jan2.getUTCDay();
+  const t1Start = j2d===6 ? addDays(jan2,2) : (j2d===0 ? addDays(jan2,1) : jan2);
+  const hasWeek0 = t1Start.getTime() < M1.getTime();
+  const t1End = addDays(M1, 10*7-3);   // Fri of week 10
+  const t2Start= addDays(M1, 11*7);
+  const t2End  = addDays(M1, 21*7-3);
+  const t3Start= addDays(M1, 25*7);
+  const t3End  = addDays(M1, 35*7-3);  // Fri of T3 week 10  (Teachers' Day)
+  const t4Start= addDays(M1, 36*7);
+  const t4End  = addDays(M1, 45*7+4);  // last school day (Friday) — holds for every year checked
+  const youth  = addDays(M1, 26*7);    // Monday of T3 week 2
+  return {M1,t1Start,t1End,t2Start,t2End,t3Start,t3End,t4Start,t4End,youth,hasWeek0};
+}
+/* First school day of the year: 2 Jan, or the next non-weekend, non-public-holiday
+   day (e.g. 2023: 1 Jan was a Sunday, so Mon 2 Jan was the New Year holiday in lieu
+   and school opened Tue 3 Jan). P1 reports on this day. */
+function firstSchoolDay(year){
+  const ph=holidaySet();
+  let d=new Date(Date.UTC(year,0,2));
+  for(let i=0;i<10;i++){
+    const dow=d.getUTCDay();
+    if(dow!==0 && dow!==6 && !ph[dateKey(d)]) return d;
+    d=addDays(d,1);
+  }
+  return d;
+}
+/* The next school day after d (skips weekends and public holidays). */
+function nextSchoolDay(d){
+  const ph=holidaySet();
+  let n=addDays(d,1);
+  for(let i=0;i<10;i++){
+    const dow=n.getUTCDay();
+    if(dow!==0 && dow!==6 && !ph[dateKey(n)]) return n;
+    n=addDays(n,1);
+  }
+  return n;
+}
+/* Staggered start: P1 on the first school day; P2-P6 on the next school day.
+   So if 2 Jan is a Friday, P1 goes Fri 2 Jan and the rest start Mon 5 Jan. */
+function levelStartDay(year, lvl){
+  const first=firstSchoolDay(year);
+  return (lvl && lvl>=2) ? nextSchoolDay(first) : first;
+}
+function firstFriday(year,month){
+  const d=new Date(Date.UTC(year,month-1,1));
+  return addDays(d, (5 - d.getUTCDay() + 7) % 7);
+}
+/* Scheduled single-day school holidays (school-only; public holidays come from the feed). */
+function schoolSingleDays(year, phSet){
+  const sy=schoolYear(year), out={};
+  out[dateKey(sy.youth)]='Youth Day (school holiday)';
+  out[dateKey(sy.t3End)]="Teachers' Day (school holiday)";
+  out[dateKey(firstFriday(year,10))]="Children's Day (school holiday)";
+  // Day after National Day: Mon-Thu -> 10 Aug; Sat -> 11 Aug (Mon); Fri/Sun -> none.
+  const nd=new Date(Date.UTC(year,7,9)), ndow=nd.getUTCDay();
+  let ndKey=null;
+  if(ndow>=1 && ndow<=4) ndKey=dateKey(new Date(Date.UTC(year,7,10)));
+  else if(ndow===6) ndKey=dateKey(new Date(Date.UTC(year,7,11)));
+  if(ndKey && !(phSet&&phSet[ndKey])) out[ndKey]='Day after National Day';
+  return out;
+}
+/* Is this date inside a school vacation? Level-aware: before a child's own start
+   day (P2-P6 begin one school day after P1) counts as no school for that child. */
+function inSchoolBreak(d, lvl){
+  const y=d.getUTCFullYear(), sy=schoolYear(y), t=d.getTime();
+  const start=levelStartDay(y, lvl||1);
+  if(t < start.getTime()) return true;                                        // before this child's first day
+  if(t > sy.t1End.getTime() && t < sy.t2Start.getTime()) return true;         // March break
+  if(t > sy.t2End.getTime() && t < sy.t3Start.getTime()) return true;         // June break
+  if(t > sy.t3End.getTime() && t < sy.t4Start.getTime()) return true;         // September break
+  if(t > sy.t4End.getTime()) return true;                                     // year-end to 31 Dec
+  return false;
+}
+/* Overrides the parent sets: 'school' | 'hbl' | 'holiday' for a given date. */
+function overrides(){ try{ const r=lsGet('rst:ovr'); return r?JSON.parse(r):{}; }catch(e){ return {}; } }
+function setOverride(key,val){ const o=overrides(); if(val===null) delete o[key]; else o[key]=val; lsSet('rst:ovr', JSON.stringify(o)); }
+/* What the calendar works out for a date, before any override: 'school' | 'holiday'.
+   (HBL can never be computed — it varies year to year — so it only comes from an override.) */
+function autoDayType(d, lvl){
+  const k=dateKey(d), dow=d.getUTCDay();
+  if(dow===0||dow===6) return 'holiday';
+  const ph=holidaySet();
+  if(ph[k]) return 'holiday';
+  if(schoolSingleDays(d.getUTCFullYear(), ph)[k]) return 'holiday';
+  return inSchoolBreak(d, lvl) ? 'holiday' : 'school';
+}
+/* The effective day type, with the parent's override winning. */
+function dayType(d, lvl){
+  const o=overrides()[dateKey(d)];
+  // 'holiday' / 'school' override the calendar. 'hbl' is a school day done from home,
+  // so it is only ever a modifier on a school day (never on a holiday).
+  if(o==='holiday' || o==='off') return 'holiday';
+  if(o==='school' || o==='on' || o==='hbl') return 'school';
+  return autoDayType(d, lvl);
+}
+/* HBL is a sub-mode of a school day. */
+function isHBLDay(d, lvl){ return overrides()[dateKey(d)]==='hbl' && dayType(d, lvl)==='school'; }
+function isNoSchoolDay(d, lvl){ return dayType(d, lvl)==='holiday'; }
+/* Why it's off (for a small label) */
+function noSchoolReason(d, lvl){
+  const k=dateKey(d), o=overrides();
+  if(o[k]==='off') return 'School holiday';
+  const ph=holidaySet(); if(ph[k]) return ph[k];
+  const sd=schoolSingleDays(d.getUTCFullYear(), ph); if(sd[k]) return sd[k];
+  const y=d.getUTCFullYear();
+  if(d.getTime() < levelStartDay(y, lvl||1).getTime() && d.getTime() >= Date.UTC(y,0,1)) return 'School year has not started';
+  if(inSchoolBreak(d, lvl)) return 'School holiday';
+  return '';
+}
 function eachDate(start,end){
   const out=[], s=new Date(start+'T00:00:00'), e=new Date(end+'T00:00:00');
   for(let d=new Date(s); d<=e; d.setDate(d.getDate()+1)) out.push(dateKey(d));
@@ -428,11 +713,45 @@ function buzz(p){ if(state.sound && navigator.vibrate){ try{ navigator.vibrate(p
 function speak(text){ try{ const sy=window.speechSynthesis; if(!sy||!text) return; sy.cancel();
   const u=new SpeechSynthesisUtterance(text); u.rate=0.95; u.pitch=1.05; u.lang='en-GB'; sy.speak(u); }catch(e){} }
 
-let state = { items:[], editing:false, draft:{name:'',prompt:'',icon:'backpack',open:null}, subDraft:{open:null,name:''}, confirmReset:false, focusName:false, focusSub:false, focusProf:false, sound:true, pop:null, profiles:[], current:null, profileEdit:null };
+let state = { items:[], template:[], checked:{}, sub:{}, adds:[], skips:[], editing:false, removeAsk:null, removeArm:null, help:false, a2hsShow:false, a2hsStep:0, nameAsk:false, nameDraft:'', nameLevel:1, draft:{name:'',prompt:'',icon:'backpack',open:null}, subDraft:{open:null,name:''}, confirmReset:false, focusName:false, focusSub:false, focusProf:false, sound:true, pop:null, profiles:[], current:null, profileEdit:null };
+/* Show the Add-to-Home-Screen nudge only when: not already installed, on a
+   mobile browser, served over http(s), and not snoozed within the last month. */
+/* Android/Chrome fires beforeinstallprompt, which we can replay later to trigger the
+   real native install. iOS/Safari offers no such API — Add to Home Screen can only be
+   done by the user via the Share menu — so there we show the steps instead. */
+let deferredInstall=null;
+window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); deferredInstall=e; });
+window.addEventListener('appinstalled', ()=>{ deferredInstall=null; state.a2hsShow=false; try{ render(); }catch(e){} });
+function isIOS(){ const ua=navigator.userAgent||'';
+  return /iphone|ipad|ipod/i.test(ua) || (/Mac/.test(ua) && navigator.maxTouchPoints>1); }
+function canAutoInstall(){ return !!deferredInstall; }
+async function doInstall(){
+  if(deferredInstall){
+    const e=deferredInstall; deferredInstall=null;
+    try{ e.prompt(); const res = await e.userChoice;
+      if(res && res.outcome==='accepted'){ state.a2hsShow=false; }
+    }catch(err){}
+    state.a2hsStep=0; render(); return true;
+  }
+  return false; // iOS (or unsupported): caller shows the manual steps
+}
+function shouldPromptA2HS(){
+  try{
+    if(location.protocol==='file:') return false;
+    const standalone=(window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone===true;
+    if(standalone) return false;
+    const ua=navigator.userAgent||'';
+    const mobileish=/android|iphone|ipad|ipod|mobile/i.test(ua) || (window.matchMedia && window.matchMedia('(pointer:coarse)').matches);
+    if(!mobileish) return false;
+    const ts=parseInt(lsGet('rst:a2hs')||'0',10);
+    return !ts || (Date.now()-ts) >= 30*24*3600*1000;
+  }catch(e){ return false; }
+}
 let prevAll = false, resetTimer = null, confettiTimer = null;
 
 function load(){
   state.sound = lsGet('rst:sound')!=='off';
+  state.a2hsShow = shouldPromptA2HS();
   let profs = null;
   try{ const r=lsGet('rst:profiles'); if(r) profs=JSON.parse(r); }catch(e){}
   if(!Array.isArray(profs) || !profs.length){
@@ -448,6 +767,10 @@ function load(){
     if(!profs.some(p=>p.id===state.current)) state.current=profs[0].id;
   }
   state.profiles=profs;
+  // Prompt for the child's name while it is still the untouched default.
+  const cp=profs.find(p=>p.id===state.current)||profs[0];
+  state.nameAsk = !!cp && /^Profile \d+$/.test((cp.name||'').trim());
+  state.nameDraft=''; state.nameLevel=1;
   loadProfileData();
 }
 
@@ -457,13 +780,15 @@ function loadProfileData(){
   const raw = lsGet(pkey(id,'items'));
   if(raw){ try{ list = JSON.parse(raw); }catch(e){} }
   if(!Array.isArray(list) || !list.length){ list = JSON.parse(JSON.stringify(DEFAULT_ITEMS)); lsSet(pkey(id,'items'), JSON.stringify(list.map(stripForSave))); }
-  let checked = {}, sub = {};
+  state.template = list;
+  let checked = {}, sub = {}, adds = [], skips = [];
   const rawP = lsGet(pkey(id,'progress'));
   if(rawP){ try{
     const p=JSON.parse(rawP);
-    if(p.date===key){ checked=p.checked||{}; sub=p.sub||{}; }
+    if(p.date===key){ checked=p.checked||{}; sub=p.sub||{}; adds=p.adds||[]; skips=p.skips||[]; }
     else {
-      // New planning day: fresh, except unchecked homework carries forward into Sat/Sun.
+      // New planning day: overlay (adds/skips) and checks reset. Unchecked homework
+      // still carries forward into Sat/Sun.
       const dow = new Date().getUTCDay();
       if(dow===6 || dow===0){
         const pc=p.checked||{}, ps=p.sub||{};
@@ -474,32 +799,45 @@ function loadProfileData(){
       }
     }
   }catch(e){} }
-  state.items = list.map(it => {
-    if(it.expandable){
-      const kids = (sub[it.id]||[]).map(c=>({id:c.id, name:c.name, done: !!checked[c.id]}));
-      return {...it, done: !!checked[it.id], children: kids};
-    }
-    if(it.children && it.children.length){
-      return {...it, children: it.children.map(c=>({...c, done: !!checked[c.id]}))};
-    }
-    return {...it, done: !!checked[it.id]};
-  });
-  const dW=tomorrow(), tD=dW.getUTCDay(), wk=(tD===0||tD===6);
-  const holL=holidaySet(); const noSch = wk || !!holL[dateKey(dW)];
-  const visSec=SECTIONS.filter(s=> !((s.id==='bring'||s.id==='uniform')&&noSch) && (!s.days || s.days.indexOf(tD)>-1)).map(s=>s.id);
-  const act=state.items.filter(it=> visSec.indexOf(it.section)>-1 && (!it.days || it.days.indexOf(tD)>-1));
+  state.checked=checked; state.sub=sub; state.adds=adds; state.skips=skips;
+  rebuild();
+  const dW=tomorrow(), tD=dW.getUTCDay(), noSch=noSchoolTomorrow(), bkt=bringBucket();
+  const lvlG=effLevel(curProfile());
+  const secVis = sid => { const s=SECTIONS.find(x=>x.id===sid); if(s && s.days && s.days.indexOf(tD)<0) return false; if(sid==='uniform') return !noSch; return true; };
+  const act=state.items.filter(it=> secVis(it.section) && itemApplies(it,tD,bkt) && levelOk(it,lvlG) && vacationOk(it,dW,lvlG));
   const t=countLeaves(act); prevAll = t>0 && countDoneLeaves(act)===t;
+}
+
+/* build a display item from a template/added item, filling done from checked/sub */
+function hydrate(it){
+  if(it.expandable){
+    const kids=(state.sub[it.id]||[]).map(c=>({id:c.id, name:c.name, done: !!state.checked[c.id]}));
+    return {...it, done: !!state.checked[it.id], children: kids};
+  }
+  if(it.children && it.children.length){
+    return {...it, children: it.children.map(c=>({...c, done: !!state.checked[c.id]}))};
+  }
+  return {...it, done: !!state.checked[it.id]};
+}
+/* display list = template (minus today's skips) + today's temporary adds */
+function rebuild(){
+  const sk=new Set(state.skips||[]);
+  const out=[];
+  (state.template||[]).forEach(t=>{ if(!sk.has(t.id)) out.push(hydrate(t)); });
+  (state.adds||[]).forEach(a=> out.push(hydrate(a)));
+  state.items=out;
 }
 
 function persist(){
   const id=state.current;
-  lsSet(pkey(id,'items'), JSON.stringify(state.items.map(stripForSave)));
-  const checked = {}, sub = {};
-  state.items.forEach(it=>{
-    leafUnits(it).forEach(u=>{ if(u.done) checked[u.id]=true; });
-    if(it.expandable) sub[it.id]=(it.children||[]).map(c=>({id:c.id, name:c.name}));
-  });
-  lsSet(pkey(id,'progress'), JSON.stringify({date: dateKey(tomorrow()), checked, sub}));
+  lsSet(pkey(id,'items'), JSON.stringify((state.template||[]).map(stripForSave)));
+  lsSet(pkey(id,'progress'), JSON.stringify({
+    date: dateKey(tomorrow()),
+    checked: state.checked||{},
+    sub: state.sub||{},
+    adds: (state.adds||[]).map(stripForSave),
+    skips: state.skips||[]
+  }));
 }
 
 function removeBtn(it){
@@ -508,42 +846,62 @@ function removeBtn(it){
 function iconCol(it){
   return `<span class="rst-iconwrap">${svg(it.icon,34,2.2)}</span>`;
 }
+/* Edit controls: added items -> remove; skipped defaults -> add back;
+   uniform default -> skip only (this time); bring/do default -> ask scope. */
+function editControl(it){
+  const isAdd = state._addIds && state._addIds.has(it.id);
+  const isSkip = state._skipSet && state._skipSet.has(it.id);
+  if(isAdd) return `<span class="rst-remove" role="button" tabindex="0" data-act="removeadd" data-id="${esc(it.id)}" aria-label="Remove ${esc(it.name)}">${svg('trash2',18,2.4)}</span>`;
+  if(isSkip) return `<span class="rst-skip on" role="button" tabindex="0" data-act="unskip" data-id="${esc(it.id)}" aria-label="Add ${esc(it.name)} back">${svg('plus',15,2.8)}</span>`;
+  if(it.section==='uniform') return `<span class="rst-skip" role="button" tabindex="0" data-act="skiponly" data-id="${esc(it.id)}" aria-label="Skip ${esc(it.name)} this time">${svg('x',15,2.7)}</span>`;
+  return `<span class="rst-remove" role="button" tabindex="0" data-act="rmask" data-id="${esc(it.id)}" aria-label="Remove ${esc(it.name)}">${svg('trash2',18,2.4)}</span>`;
+}
 
 function render(){
   const pop = state.pop; state.pop = null;
   const dT = tomorrow();
   const tDay = dT.getUTCDay();
   const wkend = (tDay===0 || tDay===6);
-  const hol = holidaySet();
-  const holTomorrow = !!hol[dateKey(dT)];
-  const noSchool = wkend || holTomorrow;
+  const prof = curProfile();
+  const profLvl = effLevel(prof)||1;
+  const dtype = dayType(dT, profLvl);              // 'school' | 'holiday'
+  const isHBL = isHBLDay(dT, profLvl);            // school day done from home
+  const noSchool = dtype==='holiday';
+  const holTomorrow = noSchool && !wkend;
+  const offReason = noSchool ? noSchoolReason(dT, profLvl) : '';
   const isToday = dateKey(dT)===dateKey(sgToday());
   const whenWord = isToday ? 'Today' : 'Tomorrow';
-  const prof = curProfile();
   const pName = prof ? prof.name : '';
   const pal = paletteOf(prof ? prof.color : 'navy');
-  const headerTitle = wkend ? 'Ready for the Weekends'
-    : holTomorrow ? 'Ready for the Holidays'
-    : (pName ? 'Ready for School, '+esc(pName)+'!' : 'Ready for School '+whenWord);
-  const visibleSections = SECTIONS.filter(sec =>
-    !((sec.id==='bring'||sec.id==='uniform') && noSchool) &&
-    (!sec.days || sec.days.indexOf(tDay)>-1)
-  );
+  const nm = pName ? `<span class="rst-hname">${esc(pName)},</span>` : '';
+  const lead = isHBL ? 'Ready for HBL'
+    : wkend ? 'Ready for the Weekends'
+    : noSchool ? 'Ready for the Holidays'
+    : (pName ? 'Ready for School' : 'Ready for School '+whenWord);
+  const headerTitle = nm ? (nm + lead) : lead;
+  const curBucket = bringBucket();
+  const applies = it => itemApplies(it, tDay, curBucket);
+  const lvl = effLevel(prof);
+  const visibleSections = SECTIONS.filter(sec => {
+    if(sec.days && sec.days.indexOf(tDay)<0) return false;
+    if(sec.id==='uniform') return !noSchool && !isHBL;   // no uniform on HBL, even a Monday
+    return true; // bring (own bucket per day type) and complete
+  });
   const visIds = visibleSections.map(s=>s.id);
-  const dayOk = it => !it.days || it.days.indexOf(tDay)>-1;
-  const items = state.items;
-  const activeItems = items.filter(it => visIds.indexOf(it.section)>-1 && dayOk(it));
+  const items = state.items.filter(it => levelOk(it, lvl) && vacationOk(it, dT, lvl));
+  const activeItems = items.filter(it => visIds.indexOf(it.section)>-1 && applies(it));
   const total = countLeaves(activeItems), done = countDoneLeaves(activeItems);
   const allDone = total>0 && done===total;
   const pct = total ? Math.round(done/total*100) : 0;
   const weekday = dT.toLocaleDateString(undefined,{weekday:'long', timeZone:'UTC'});
-  const longDate = dT.toLocaleDateString(undefined,{day:'numeric',month:'long',year:'numeric', timeZone:'UTC'});
+  const longDate = dT.getUTCDate()+' '+dT.toLocaleDateString('en-GB',{month:'long',timeZone:'UTC'})+' '+dT.getUTCFullYear();
   const tdy = sgToday();
   const calMon = tdy.toLocaleDateString(undefined,{month:'short', timeZone:'UTC'}).toUpperCase();
   const calNum = tdy.getUTCDate();
   const calDow = tdy.toLocaleDateString(undefined,{weekday:'short', timeZone:'UTC'});
 
   let h = '';
+
 
   // profile switcher
   h += `<div class="rst-profiles">`;
@@ -553,6 +911,7 @@ function render(){
        + `<span class="rst-pchip-dot" style="background:${pp.c1}"></span>${esc(p.name)}${active?` <span class="rst-pchip-edit" data-act="profedit" aria-label="Edit profile">${svg('pencil',14,2.6)}</span>`:''}</button>`;
   });
   h += `<button class="rst-pchip rst-pchip-add" data-act="profadd" aria-label="Add a child">${svg('plus',18,2.8)}</button>`;
+  h += `<button class="rst-help" data-act="help" aria-label="How it works">${svg('info',18,2.6)}<span>Help</span></button>`;
   h += `</div>`;
 
   // profile add/edit panel
@@ -560,26 +919,41 @@ function render(){
     const d=state.profileEdit;
     h += `<div class="rst-profpanel"><div class="rst-profpanel-title">${d.id?'Edit profile':'New profile'}</div>`
        + `<input class="rst-input" id="rst-profname" placeholder="Child's name" value="${esc(d.name)}" maxlength="20">`
-       + `<div class="rst-swatches">`;
+       + `<div class="rst-proflabel">Primary level</div><div class="rst-levels">`;
+    for(let n=1;n<=6;n++){ h += `<button class="rst-level${d.level===n?' sel':''}" data-act="proflevel" data-level="${n}">P${n}</button>`; }
+    h += `</div><div class="rst-proflabel">Colour</div><div class="rst-swatches">`;
     PALETTE.forEach(c=>{ h += `<button class="rst-swatch${d.color===c.id?' sel':''}" data-act="profcolor" data-color="${c.id}" aria-label="${c.id}" style="background:${c.c1}"></button>`; });
     h += `</div><div class="rst-formrow">`
        + `<button class="rst-ghost" data-act="profcancel">${svg('x',18,2.6)} Cancel</button>`
        + `<button class="rst-primary" data-act="profsave" ${d.name.trim()?'':'disabled'}>${svg('check',18,2.8)} ${d.id?'Save':'Add child'}</button></div>`;
     if(d.id && state.profiles.length>1){
-      h += `<button class="rst-profdel${d.confirmDel?' warn':''}" data-act="profdelete">${svg('trash2',16,2.4)} ${d.confirmDel?'Tap again to delete this profile':'Delete this profile'}</button>`;
+      h += `<button class="rst-profdel rst-hold" data-holdact="profdelete"><span class="rst-holdfill"></span><span class="rst-holdlabel">${svg('trash2',16,2.4)} Hold to delete profile</span></button>`;
     }
     h += `</div>`;
   }
 
-  h += `<header class="rst-header" style="background:linear-gradient(135deg,${pal.c1} 0%,${pal.c2} 100%)"><div class="rst-sun">${svg('sun',26,2.5)}</div>`
+  h += `<header class="rst-header" style="background:linear-gradient(135deg,${pal.c1} 0%,${pal.c2} 100%)">`
      + `<div class="rst-head-main"><h1>${headerTitle}</h1>`
-     + `<p class="rst-date"><span class="rst-tag">${whenWord}</span><span class="rst-weekday">${esc(weekday)}</span><span class="rst-dot">&bull;</span>${esc(longDate)}</p></div>`
+     + `<p class="rst-date"><span class="rst-dtop"><span class="rst-tag">${whenWord}</span><span class="rst-weekday">${esc(weekday)}</span></span><span class="rst-dbot">${esc(longDate)}</span></p></div>`
      + `<div class="rst-today"><span class="rst-today-cap">Today</span>`
      + `<span class="rst-cal"><span class="rst-cal-top">${esc(calMon)}</span><span class="rst-cal-num">${calNum}</span><span class="rst-cal-dow">${esc(calDow)}</span></span></div>`
      + `</header>`;
 
+
+  // School / Holiday switch (weekdays only) — sits above the progress bar
+  if(!wkend){
+    const hblBtn = !noSchool
+      ? `<button class="rst-hbl${isHBL?' on':''}" data-act="hbl" aria-pressed="${isHBL}" aria-label="Home-based learning">${svg('house',13,2.6)}<span>HBL</span></button>`
+      : '';
+    h += `<div class="rst-holbar">${hblBtn}`
+       + `<span class="rst-holbar-lab">${noSchool?'Holiday':'School Day'}</span>`
+       + `<button class="rst-switch${noSchool?' on':''}" role="switch" aria-checked="${noSchool}" aria-label="Mark ${whenWord.toLowerCase()} as a holiday"`
+       + ` data-act="dayset" data-set="${noSchool?'school':'holiday'}"><span class="rst-knob"></span></button>`
+       + `</div>`;
+  }
+
   if(allDone){
-    h += `<div class="rst-celebrate pop">${svg('partyPopper',30,2.4)}<div><strong>Great job${pName?', '+esc(pName):''}!</strong><span>${wkend?'Everything is done. Enjoy your day off!':('You are ready for school '+(isToday?'today':'tomorrow')+'!')}</span></div></div>`;
+    h += `<div class="rst-celebrate pop">${svg('partyPopper',30,2.4)}<div><strong>Great job${pName?', '+esc(pName):''}!</strong><span>${isHBL?('You are ready for home-based learning '+(isToday?'today':'tomorrow')+'!'):(noSchool?'Everything is done. Enjoy your day off!':('You are ready for school '+(isToday?'today':'tomorrow')+'!'))}</span></div></div>`;
   } else {
     const fillSun = pct>8 ? svg('sun',16,2.6).replace('<svg','<svg class="rst-fillsun"') : '';
     h += `<div class="rst-progress"><div class="rst-progress-top"><span>${done===0?"Let's get ready":"Getting ready"}</span>`
@@ -587,20 +961,54 @@ function render(){
        + `<div class="rst-track"><div class="rst-fill" style="width:${pct}%">${fillSun}</div></div></div>`;
   }
 
+  if(state.editing){
+    h += `<p class="rst-edithint">Add or remove items \u2014 you\u2019ll choose \u201cthis time only\u201d or \u201cadd to default list.\u201d</p>`;
+  }
+  state._addIds=new Set((state.adds||[]).map(a=>a.id));
+  state._skipSet=new Set(state.skips||[]);
+  let renderSecs;
+  if(state.editing){
+    renderSecs = SECTIONS.filter(s=> s.id==='bring' || s.id==='complete' || (s.id==='uniform' && visIds.indexOf('uniform')>-1));
+  } else renderSecs = visibleSections;
+
   if(total===0 && !state.editing){
     h += `<div class="rst-empty">${svg('backpack',40,1.8)}<p>Nothing here yet. Tap <b>Edit list</b> to add items.</p></div>`;
   } else {
-    visibleSections.forEach(sec=>{
-      const secItems = items.filter(it=>it.section===sec.id && dayOk(it));
-      if(secItems.length===0 && !state.editing) return;
+    renderSecs.forEach(sec=>{
+      let secItems;
+      if(state.editing){
+        const tI = state.template.filter(it=> it.section===sec.id && levelOk(it,lvl) && vacationOk(it,dT,lvl) && applies(it)).map(hydrate);
+        const aI = (state.adds||[]).filter(it=> it.section===sec.id && applies(it)).map(hydrate);
+        secItems = tI.concat(aI);
+      } else {
+        secItems = items.filter(it=>it.section===sec.id && applies(it));
+      }
+      if(secItems.length===0 && !state.editing && sec.id!=='bring') return;
       const secTotal = countLeaves(secItems), secDone = countDoneLeaves(secItems);
       h += `<section class="rst-section"><div class="rst-section-head"><span class="rst-section-icon">${svg(sec.icon,18,2.5)}</span><h2>${esc(isToday?sec.title.replace('Tomorrow','Today'):sec.title)}</h2>`;
-      if(secTotal>0) h += `<span class="rst-chip${secDone===secTotal?' full':''}">${secDone}/${secTotal}</span>`;
-      h += `</div><div class="rst-grid">`;
+      if(secTotal>0 && !state.editing) h += `<span class="rst-chip${secDone===secTotal?' full':''}">${secDone}/${secTotal}</span>`;
+      h += `</div>`;
+      if(secItems.length===0 && !state.editing && sec.id==='bring'){
+        h += `<div class="rst-bring-empty">${svg('backpack',22,2)}<span>Tap <b>Edit</b> to add to your bring list.</span></div></section>`;
+        return;
+      }
+      h += `<div class="rst-grid">`;
 
       secItems.forEach(it=>{
+        if(state.editing && state.removeAsk===it.id){
+          h += `<div class="rst-card rst-askremove"><span class="rst-iconwrap">${svg(it.icon,34,2.2)}</span>`
+             + `<span class="rst-text"><span class="rst-name">${esc(it.name)}</span>`
+             + `<span class="rst-askrow">`
+             + `<button class="rst-askbtn" data-act="rmchoose" data-id="${esc(it.id)}" data-scope="today">This time only</button>`
+             + `<button class="rst-askbtn warn rst-hold" data-holdact="rmdefault" data-id="${esc(it.id)}"><span class="rst-holdfill"></span><span class="rst-holdlabel">Remove from default list <em class="rst-holdhint">hold</em></span></button>`
+             + `<button class="rst-askbtn ghost" data-act="rmcancel">Cancel</button>`
+             + `</span></span></div>`;
+          return;
+        }
         const isExp = !!it.expandable;
         const hasKids = it.children && it.children.length>0;
+        const isContainer = !isExp && Array.isArray(it.children);
+        const isSkip = state._skipSet.has(it.id);
         if(isExp){
           const kidsDone = hasKids ? it.children.filter(c=>c.done).length : 0;
           const complete = hasKids && kidsDone===it.children.length;
@@ -609,8 +1017,8 @@ function render(){
           let status;
           if(hasKids) status = complete ? 'All done!' : (kidsDone+' of '+it.children.length+' done');
           else status = it.done ? 'All done!' : 'No homework today? Tap to tick.';
-          h += `<div class="rst-card rst-parent expandable${tickOn?' is-done':''}${state.editing?' is-edit':''}">`;
-          if(state.editing) h += removeBtn(it);
+          h += `<div class="rst-card rst-parent expandable${tickOn?' is-done':''}${state.editing?' is-edit':''}${isSkip?' is-skipped':''}">`;
+          if(state.editing) h += editControl(it);
           h += (headTappable
                  ? `<button class="rst-parent-head as-button" data-act="toggle" data-id="${esc(it.id)}" aria-pressed="${!!it.done}">`
                  : `<div class="rst-parent-head">`)
@@ -643,14 +1051,14 @@ function render(){
           h += `</div>`;
           return;
         }
-        if(hasKids){
+        if(isContainer){
           const kidsDone = it.children.filter(c=>c.done).length;
-          const complete = kidsDone===it.children.length;
-          h += `<div class="rst-card rst-parent${complete?' is-done':''}${state.editing?' is-edit':''}">`;
-          if(state.editing) h += removeBtn(it);
+          const complete = it.children.length>0 && kidsDone===it.children.length;
+          h += `<div class="rst-card rst-parent${complete?' is-done':''}${state.editing?' is-edit':''}${isSkip?' is-skipped':''}">`;
+          if(state.editing) h += editControl(it);
           h += `<div class="rst-parent-head">${iconCol(it)}`
              + `<span class="rst-text"><span class="rst-name">${esc(it.name)}</span>`
-             + `<span class="rst-prompt">${complete?'All packed!':(kidsDone+' of '+it.children.length+' packed')}</span></span>`
+             + `<span class="rst-prompt">${it.children.length?(complete?'All packed!':(kidsDone+' of '+it.children.length+' packed')):'No items yet'}</span></span>`
              + `<span class="rst-tick auto${complete?' on':''}${it.id===pop?' badgePop':''}">${complete?svg('check',20,3.2):''}</span></div>`;
           if(!state.editing){
             h += `<ul class="rst-sub">`;
@@ -660,10 +1068,28 @@ function render(){
                  + `<span class="rst-subname">${esc(c.name)}</span></button></li>`;
             });
             h += `</ul>`;
+          } else {
+            h += `<ul class="rst-sub">`;
+            it.children.forEach(c=>{
+              h += `<li><div class="rst-subitem rst-subedit">`
+                 + `<span class="rst-subname">${esc(c.name)}</span>`
+                 + `<span class="rst-subx" role="button" tabindex="0" data-act="tsub-remove" data-id="${esc(c.id)}" aria-label="Remove ${esc(c.name)}">${svg('x',16,2.6)}</span>`
+                 + `</div></li>`;
+            });
+            h += `</ul>`;
+            if(state.subDraft.open===it.id){
+              h += `<div class="rst-subform">`
+                 + `<input class="rst-input" id="rst-subname" placeholder="Add an item" value="${esc(state.subDraft.name)}">`
+                 + `<button class="rst-ghost rst-subbtn" data-act="sub-cancel" aria-label="Cancel">${svg('x',18,2.6)}</button>`
+                 + `<button class="rst-primary rst-subbtn" data-act="tsub-submit" data-id="${esc(it.id)}" ${state.subDraft.name.trim()?'':'disabled'}>${svg('plus',18,2.6)} Add</button>`
+                 + `</div>`;
+            } else {
+              h += `<button class="rst-subadd" data-act="sub-open" data-id="${esc(it.id)}">${svg('plus',20,2.6)}<span>Add to ${esc(it.name.toLowerCase())}</span></button>`;
+            }
           }
           h += `</div>`;
         } else if(state.editing){
-          h += `<div class="rst-card is-edit">${removeBtn(it)}<span class="rst-iconwrap">${svg(it.icon,34,2.2)}</span>`
+          h += `<div class="rst-card is-edit${isSkip?' is-skipped':''}">${editControl(it)}<span class="rst-iconwrap">${svg(it.icon,34,2.2)}</span>`
              + `<span class="rst-text"><span class="rst-name">${esc(it.name)}</span>${it.prompt?`<span class="rst-prompt">${esc(it.prompt)}</span>`:''}</span></div>`;
         } else {
           h += `<button class="rst-card${it.done?' is-done':''}" data-act="toggle" data-id="${esc(it.id)}" aria-pressed="${it.done}">`
@@ -676,16 +1102,20 @@ function render(){
       if(state.editing){
         h += `<div class="rst-add">`;
         if(state.draft.open!==sec.id){
-          h += `<button class="rst-addbtn" data-act="add-open" data-sec="${sec.id}">${svg('plus',26,2.6)}<span>Add to ${esc(sec.title.toLowerCase())}</span></button>`;
+          h += `<button class="rst-addbtn" data-act="add-open" data-sec="${sec.id}">${svg('plus',26,2.6)}<span>Add to ${esc((isToday?sec.title.replace('Tomorrow','Today'):sec.title).toLowerCase())}</span></button>`;
         } else {
           h += `<div class="rst-form">`
              + `<input class="rst-input" id="rst-name" placeholder="Item name" value="${esc(state.draft.name)}">`
              + `<input class="rst-input" id="rst-prompt" placeholder="A little reminder (optional)" value="${esc(state.draft.prompt)}">`
              + `<div class="rst-iconpick">`;
           PICKER_ICONS.forEach(k=>{ h += `<button class="rst-iconopt${state.draft.icon===k?' sel':''}" data-act="pick" data-icon="${k}" aria-label="${k}">${svg(k,22,2.2)}</button>`; });
+          const dis = state.draft.name.trim()?'':'disabled';
           h += `</div><div class="rst-formrow">`
-             + `<button class="rst-ghost" data-act="add-cancel">${svg('x',18,2.6)} Cancel</button>`
-             + `<button class="rst-primary" data-act="add-submit" data-sec="${sec.id}" ${state.draft.name.trim()?'':'disabled'}>${svg('plus',18,2.6)} Add item</button>`
+             + `<button class="rst-ghost rst-subbtn" data-act="add-cancel" aria-label="Cancel">${svg('x',18,2.6)}</button>`
+             + (sec.id==='uniform'
+                 ? `<button class="rst-primary" data-act="add-submit" data-sec="${sec.id}" data-scope="today" ${dis}>${svg('plus',18,2.6)} Add for ${whenWord.toLowerCase()}</button>`
+                 : `<button class="rst-primary" data-act="add-submit" data-sec="${sec.id}" data-scope="today" ${dis}>This time only</button>`
+                   + `<button class="rst-primary" data-act="add-submit" data-sec="${sec.id}" data-scope="default" ${dis}>Add to default list</button>`)
              + `</div></div>`;
         }
         h += `</div>`;
@@ -700,10 +1130,68 @@ function render(){
      + `<button class="rst-action${state.editing?' active':''}" data-act="edit">${svg('pencil',18,2.6)}${state.editing?'Done editing':'Edit list'}</button>`
      + `</footer>`;
 
+  // 1) Ask for the child's name while the profile is still the default
+  if(state.nameAsk){
+    h += `<div class="rst-overlay"><div class="rst-modal">`
+       + `<h2>What\u2019s your name?</h2>`
+       + `<p>Personalise your packing and to-do list.<br>Names can still be changed later.</p>`
+       + `<input class="rst-input" id="rst-askname" placeholder="Enter name" value="${esc(state.nameDraft)}" maxlength="20" autocomplete="off">`
+       + `<div class="rst-proflabel">Primary level</div><div class="rst-levels rst-levels-row">`
+       + [1,2,3,4,5,6].map(n=>`<button class="rst-level${state.nameLevel===n?' sel':''}" data-act="name-level" data-level="${n}">P${n}</button>`).join('')
+       + `</div>`
+       + `<div class="rst-modal-btns">`
+       + `<button class="rst-primary" data-act="name-save" ${state.nameDraft.trim()?'':'disabled'}>${svg('check',18,2.8)} Save</button>`
+       + `</div></div></div>`;
+  }
+  // 2) Then the Add-to-Home-Screen nudge (only once the name step is out of the way)
+  else if(state.a2hsShow){
+    h += `<div class="rst-overlay"><div class="rst-modal">`
+       + `<button class="rst-modal-x" data-act="a2hs-close" aria-label="Close">${svg('x',20,2.6)}</button>`;
+    if(state.a2hsStep===0){
+      h += `<h2>Add to Home Screen</h2>`
+         + `<p>Unlocks the full app \u2014 it works offline and keeps your child\u2019s setup safe on this device.</p>`
+         + `<div class="rst-modal-btns"><button class="rst-primary" data-act="a2hs-start">${svg('plus',18,2.8)} Add to Home Screen</button></div>`
+         + `<button class="rst-a2hs-never" data-act="a2hs-never">Don\u2019t show me again</button>`;
+    } else if(state.a2hsStep===1){
+      h += `<h2>Add to Home Screen?</h2>`
+         + `<p>${canAutoInstall() ? 'Your browser will ask you to confirm, and the app will be added to your Home Screen.' : 'We\u2019ll show you the two steps to add it \u2014 it takes a moment.'}</p>`
+         + `<div class="rst-modal-btns">`
+         + `<button class="rst-ghost" data-act="a2hs-back">Back</button>`
+         + `<button class="rst-primary" data-act="a2hs-confirm">${svg('check',18,2.8)} Confirm</button>`
+         + `</div>`;
+    } else {
+      h += `<h2>Add to Home Screen</h2>`
+         + (isIOS()
+             ? `<div class="rst-a2hs-steps"><b>1.</b> Tap the <b>Share</b> button at the bottom of Safari.<br><b>2.</b> Scroll down and tap <b>Add to Home Screen</b>, then <b>Add</b>.</div>`
+             + `<p class="rst-a2hs-note">Safari doesn\u2019t let apps do this step for you \u2014 it has to be your tap.</p>`
+             : `<div class="rst-a2hs-steps"><b>1.</b> Open the browser menu (\u22ee).<br><b>2.</b> Tap <b>Add to Home Screen</b> or <b>Install app</b>.</div>`)
+         + `<div class="rst-modal-btns"><button class="rst-primary" data-act="a2hs-close">${svg('check',18,2.8)} Got it</button></div>`
+         + `<button class="rst-a2hs-never" data-act="a2hs-never">Don\u2019t show me again</button>`;
+    }
+    h += `</div></div>`;
+  }
+
+  if(state.help){
+    const hi=(t,d)=>`<div class="rst-help-item"><b>${esc(t)}</b><span>${d}</span></div>`;
+    h += `<div class="rst-overlay" data-act="helpclose"><div class="rst-sheet" data-act="noop">`
+       + `<div class="rst-sheet-head"><h2>How it works</h2><button class="rst-sheet-x" data-act="helpclose" aria-label="Close">${svg('x',20,2.6)}</button></div>`
+       + `<div class="rst-help-body">`
+       + hi('Tick as you go','Tap each item to check it. Finish everything for a little cheer. Reset clears the ticks.')
+       + hi('Today vs Tomorrow','The list is for the next school day. After midnight it reads \u201cToday\u201d, and it refreshes to a fresh day at 8am Singapore time \u2014 so early-morning checking still works.')
+       + hi('Homework','Tap \u201cAdd homework\u201d to list each day\u2019s tasks. Unchecked homework carries through the weekend.')
+       + hi('Editing items','In Edit, you may choose to add or remove items permanently to personalize your default list or just for a day.')
+       + hi('Profiles','Add a child by inputting the name and level this year. You may customise the colour. Once the level is set, it will automatically update to the next level when the new year begins.')
+       + hi('Safe deleting','Deleting a profile or removing a default item needs a press-and-hold.')
+       + hi('School days & holidays','Term breaks, Youth Day, Teachers\u2019 Day, Children\u2019s Day and public holidays are worked out automatically each year \u2014 nothing to update. Use the School Day / Holiday switch if a day differs, and the HBL button for a Home-Based Learning day.')
+       + hi('Saving','Everything saves on this device. On iPhone, add it to your Home Screen (Share \u2192 Add to Home Screen). On Android, use the browser menu (\u22ee) \u2192 Add to Home Screen / Install app.')
+       + `</div></div></div>`;
+  }
+
   document.getElementById('app').innerHTML = h;
 
   if(state.focusName){ const el=document.getElementById('rst-name'); if(el){ el.focus(); } state.focusName=false; }
   if(state.focusSub){ const el=document.getElementById('rst-subname'); if(el){ el.focus(); } state.focusSub=false; }
+  { const el=document.getElementById('rst-askname'); if(el && document.activeElement!==el) el.focus(); }
   if(state.focusProf){ const el=document.getElementById('rst-profname'); if(el){ el.focus(); } state.focusProf=false; }
 
   if(allDone && !prevAll) celebrate();
@@ -713,55 +1201,72 @@ function render(){
 function commit(){ persist(); render(); }
 
 function toggle(id){
-  let became=false, found=false;
-  state.items = state.items.map(it=>{
-    if(it.children && it.children.length){
-      if(!it.children.some(c=>c.id===id)) return it;
-      return {...it, children: it.children.map(c=>{ if(c.id===id){ found=true; became=!c.done; return {...c,done:!c.done}; } return c; })};
-    }
-    if(it.id===id){ found=true; became=!it.done; return {...it,done:!it.done}; }
-    return it;
-  });
-  if(found){ tapSound(became); buzz(12); state.pop = became ? id : null; }
-  commit();
+  const became = !state.checked[id];
+  if(became) state.checked[id]=true; else delete state.checked[id];
+  tapSound(became); buzz(12); state.pop = became ? id : null;
+  rebuild(); commit();
 }
-function removeItem(id){ state.items = state.items.filter(it=>it.id!==id); commit(); }
+/* per-item scope actions */
+function removeAdd(id){ state.adds=(state.adds||[]).filter(it=>it.id!==id); rebuild(); commit(); }
+function removeTemplate(id){ state.template=(state.template||[]).filter(it=>it.id!==id); rebuild(); commit(); }
+function skipToggle(id){
+  const s=new Set(state.skips||[]);
+  if(s.has(id)) s.delete(id); else s.add(id);
+  state.skips=[...s]; rebuild(); commit();
+}
+function rmAsk(id){ state.removeAsk=id; state.removeArm=null; render(); }
+function rmCancel(){ state.removeAsk=null; state.removeArm=null; render(); }
+function rmChoose(id, scope){ state.removeAsk=null; state.removeArm=null; if(scope==='default') removeTemplate(id); else skipToggle(id); }
 function soundToggle(){ state.sound=!state.sound; lsSet('rst:sound', state.sound?'on':'off'); if(state.sound){ tapSound(true); buzz(12); } render(); }
+function helpToggle(){ state.help=!state.help; render(); }
 
 function switchProfile(id){ if(id===state.current) return; persist(); state.current=id; saveProfiles(); state.editing=false; state.profileEdit=null; state.pop=null; loadProfileData(); render(); }
-function profileAddOpen(){ state.profileEdit={id:null, name:'', color:'navy', confirmDel:false}; state.focusProf=true; render(); }
-function profileEditOpen(){ const p=curProfile(); state.profileEdit={id:p.id, name:p.name, color:p.color, confirmDel:false}; state.focusProf=true; render(); }
+function profileAddOpen(){ state.profileEdit={id:null, name:'', color:'navy', level:1, confirmDel:false}; state.focusProf=true; render(); }
+function profileEditOpen(){ const p=curProfile(); state.profileEdit={id:p.id, name:p.name, color:p.color, level:p.level||1, confirmDel:false}; state.focusProf=true; render(); }
+function profileLevel(n){ if(state.profileEdit){ state.profileEdit.level=n; render(); } }
 function profileCancel(){ state.profileEdit=null; render(); }
 function profileColor(cid){ if(state.profileEdit){ state.profileEdit.color=cid; render(); } }
 function profileSave(){
   const d=state.profileEdit; if(!d) return;
   const name=(d.name||'').trim()||'Profile';
+  const yr=sgToday().getUTCFullYear();
+  const level=d.level||1;
   if(d.id){
-    const p=state.profiles.find(x=>x.id===d.id); if(p){ p.name=name; p.color=d.color; }
+    const p=state.profiles.find(x=>x.id===d.id); if(p){ p.name=name; p.color=d.color; p.level=level; p.levelYear=yr; }
     saveProfiles(); state.profileEdit=null; render();
   } else {
     persist(); // save the profile we're leaving
     const id='p'+Date.now().toString(36);
-    state.profiles.push({id, name, color:d.color});
+    state.profiles.push({id, name, color:d.color, level, levelYear:yr});
     lsSet(pkey(id,'items'), JSON.stringify(DEFAULT_ITEMS.map(stripForSave)));
     state.current=id; saveProfiles(); state.profileEdit=null; state.editing=false; state.pop=null;
     loadProfileData(); render();
   }
 }
-function profileDelete(){
+function profileDeleteNow(){
   const d=state.profileEdit; if(!d||!d.id||state.profiles.length<=1) return;
-  if(!d.confirmDel){ d.confirmDel=true; render(); return; }
   lsDel(pkey(d.id,'items')); lsDel(pkey(d.id,'progress'));
   state.profiles=state.profiles.filter(p=>p.id!==d.id);
   if(state.current===d.id) state.current=state.profiles[0].id;
   saveProfiles(); state.profileEdit=null; state.editing=false;
   loadProfileData(); render();
 }
-function toggleEdit(){ state.editing=!state.editing; state.draft.open=null; render(); }
+/* hold-to-confirm: press and hold ~1.2s to fire a destructive action */
+let holdTimer=null, holdEl=null;
+function holdStart(el){
+  holdCancel(); holdEl=el; el.classList.add('holding');
+  holdTimer=setTimeout(()=>{
+    holdTimer=null; if(holdEl){ holdEl.classList.remove('holding'); holdEl=null; }
+    const act=el.getAttribute('data-holdact');
+    if(act==='profdelete') profileDeleteNow();
+    else if(act==='rmdefault'){ state.removeAsk=null; state.removeArm=null; removeTemplate(el.getAttribute('data-id')); }
+  }, 1200);
+}
+function holdCancel(){ if(holdTimer){ clearTimeout(holdTimer); holdTimer=null; } if(holdEl){ holdEl.classList.remove('holding'); holdEl=null; } }
+function toggleEdit(){ state.editing=!state.editing; state.draft.open=null; state.removeAsk=null; state.removeArm=null; render(); }
 function doReset(){
   if(state.confirmReset){
-    state.items = state.items.map(it=> it.children&&it.children.length ? {...it,children:it.children.map(c=>({...c,done:false}))} : {...it,done:false});
-    state.confirmReset=false; clearTimeout(resetTimer); clearConfetti(); commit();
+    state.checked={}; state.confirmReset=false; clearTimeout(resetTimer); clearConfetti(); rebuild(); commit();
   } else {
     state.confirmReset=true; render();
     clearTimeout(resetTimer); resetTimer=setTimeout(()=>{ state.confirmReset=false; render(); },3000);
@@ -770,22 +1275,38 @@ function doReset(){
 function addOpen(sec){ state.draft={name:'',prompt:'',icon:'backpack',open:sec}; state.focusName=true; render(); }
 function addCancel(){ state.draft={name:'',prompt:'',icon:'backpack',open:null}; render(); }
 function pick(icon){ state.draft.icon=icon; render(); }
-function addSubmit(sec){
+function addSubmit(sec, scope){
   const name=state.draft.name.trim(); if(!name) return;
-  state.items=[...state.items, {id:'it_'+Date.now()+'_'+Math.random().toString(36).slice(2,7), section:sec, name, prompt:state.draft.prompt.trim(), icon:state.draft.icon, done:false}];
+  const item={id:'it_'+Date.now()+'_'+Math.random().toString(36).slice(2,7), section:sec, name, prompt:state.draft.prompt.trim(), icon:state.draft.icon};
+  if(sec==='bring') item.bucket = bringBucket();
+  if(scope==='default') state.template=[...(state.template||[]), item];
+  else state.adds=[...(state.adds||[]), item]; // 'today' (this time only)
   state.draft={name:'',prompt:'',icon:'backpack',open:null};
-  commit();
+  rebuild(); commit();
 }
 function subOpen(id){ state.subDraft={open:id,name:''}; state.focusSub=true; render(); }
 function subCancel(){ state.subDraft={open:null,name:''}; render(); }
 function subSubmit(id){
   const name=state.subDraft.name.trim(); if(!name) return;
-  state.items=state.items.map(it=> it.id===id ? {...it, done:false, children:[...(it.children||[]), {id:'sub_'+Date.now()+'_'+Math.random().toString(36).slice(2,7), name, done:false}]} : it);
-  state.subDraft={open:null,name:''}; commit();
+  const kid={id:'sub_'+Date.now()+'_'+Math.random().toString(36).slice(2,7), name};
+  state.sub={...state.sub, [id]:[...(state.sub[id]||[]), kid]};
+  delete state.checked[id]; // parent no longer auto-complete
+  state.subDraft={open:null,name:''}; rebuild(); commit();
 }
 function subRemove(id){
-  state.items=state.items.map(it=> (it.expandable && it.children) ? {...it, children: it.children.filter(c=>c.id!==id)} : it);
-  commit();
+  const ns={}; Object.keys(state.sub).forEach(k=>{ ns[k]=state.sub[k].filter(c=>c.id!==id); });
+  state.sub=ns; delete state.checked[id]; rebuild(); commit();
+}
+/* container (e.g. Pencil Case) items live in the template, edited permanently */
+function tsubSubmit(id){
+  const name=state.subDraft.name.trim(); if(!name) return;
+  const kid={id:'pc_'+Date.now()+'_'+Math.random().toString(36).slice(2,7), name};
+  state.template=state.template.map(t=> t.id===id ? {...t, children:[...(t.children||[]), kid]} : t);
+  state.subDraft={open:null,name:''}; rebuild(); commit();
+}
+function tsubRemove(childId){
+  state.template=state.template.map(t=> (Array.isArray(t.children)&&t.children.length) ? {...t, children:t.children.filter(c=>c.id!==childId)} : t);
+  delete state.checked[childId]; rebuild(); commit();
 }
 
 function celebrate(){
@@ -812,44 +1333,91 @@ app.addEventListener('click', e=>{
   const t=e.target.closest('[data-act]'); if(!t) return;
   const act=t.getAttribute('data-act'), id=t.getAttribute('data-id'), sec=t.getAttribute('data-sec');
   if(act==='toggle') toggle(id);
-  else if(act==='remove'){ e.stopPropagation(); removeItem(id); }
+  else if(act==='removeadd'){ e.stopPropagation(); removeAdd(id); }
+  else if(act==='rmask'){ e.stopPropagation(); rmAsk(id); }
+  else if(act==='rmcancel') rmCancel();
+  else if(act==='rmchoose') rmChoose(id, t.getAttribute('data-scope'));
+  else if(act==='skiponly'){ e.stopPropagation(); skipToggle(id); }
+  else if(act==='unskip'){ e.stopPropagation(); skipToggle(id); }
   else if(act==='sub-remove'){ e.stopPropagation(); subRemove(id); }
   else if(act==='sub-open') subOpen(id);
   else if(act==='sub-cancel') subCancel();
   else if(act==='sub-submit') subSubmit(id);
+  else if(act==='tsub-submit') tsubSubmit(id);
+  else if(act==='tsub-remove'){ e.stopPropagation(); tsubRemove(id); }
   else if(act==='speak'){ e.stopPropagation(); speak(t.getAttribute('data-text')); }
   else if(act==='soundtoggle') soundToggle();
+  else if(act==='help') helpToggle();
+  else if(act==='dayset'){ const set=t.getAttribute('data-set'); const k=dateKey(tomorrow());
+    const auto=autoDayType(tomorrow(), curLevel());
+    setOverride(k, set===auto ? null : set);   // back to auto if it matches the calendar
+    loadProfileData(); render(); }
+  else if(act==='hbl'){ const k=dateKey(tomorrow());
+    const on = isHBLDay(tomorrow(), curLevel());
+    if(on){ const auto=autoDayType(tomorrow(), curLevel()); setOverride(k, auto==='school'? null : 'school'); }
+    else setOverride(k, 'hbl');
+    loadProfileData(); render(); }
+  else if(act==='a2hs-start'){ state.a2hsStep=1; render(); }
+  else if(act==='a2hs-back'){ state.a2hsStep=0; render(); }
+  else if(act==='a2hs-confirm'){
+    doInstall().then(done=>{ if(!done){ state.a2hsStep=2; render(); } });
+  }
+  else if(act==='a2hs-close'){ state.a2hsShow=false; state.a2hsStep=0; render(); }
+  else if(act==='name-save'){
+    const nm=(state.nameDraft||'').trim();
+    if(nm){ const p=curProfile(); if(p){ p.name=nm; p.level=state.nameLevel||1; p.levelYear=sgToday().getUTCFullYear(); saveProfiles(); } }
+    state.nameAsk=false; state.nameDraft=''; loadProfileData(); render();
+  }
+  else if(act==='name-level'){ state.nameLevel=parseInt(t.getAttribute('data-level'),10)||1; render(); }
+  else if(act==='a2hs-never'){ lsSet('rst:a2hs', String(Date.now())); state.a2hsShow=false; state.a2hsStep=0; render(); }
+  else if(act==='helpclose'){ state.help=false; render(); }
   else if(act==='profswitch') switchProfile(id);
   else if(act==='profedit') profileEditOpen();
   else if(act==='profadd') profileAddOpen();
   else if(act==='profcancel') profileCancel();
   else if(act==='profcolor') profileColor(t.getAttribute('data-color'));
+  else if(act==='proflevel') profileLevel(parseInt(t.getAttribute('data-level'),10));
   else if(act==='profsave') profileSave();
-  else if(act==='profdelete') profileDelete();
   else if(act==='edit') toggleEdit();
   else if(act==='reset') doReset();
   else if(act==='add-open') addOpen(sec);
   else if(act==='add-cancel') addCancel();
-  else if(act==='add-submit') addSubmit(sec);
+  else if(act==='add-submit') addSubmit(sec, t.getAttribute('data-scope'));
   else if(act==='pick') pick(t.getAttribute('data-icon'));
 });
 app.addEventListener('keydown', e=>{
-  if(e.target && e.target.id==='rst-subname' && e.key==='Enter'){ const b=app.querySelector('[data-act="sub-submit"]'); if(b && !b.disabled) b.click(); return; }
+  const hb=e.target.closest && e.target.closest('[data-holdact]');
+  if(hb && (e.key==='Enter' || e.key===' ')){ e.preventDefault(); const act=hb.getAttribute('data-holdact');
+    if(act==='profdelete') profileDeleteNow(); else if(act==='rmdefault'){ state.removeAsk=null; state.removeArm=null; removeTemplate(hb.getAttribute('data-id')); } return; }
+  if(e.target && e.target.id==='rst-askname' && e.key==='Enter'){ const b=app.querySelector('[data-act="name-save"]'); if(b && !b.disabled) b.click(); return; }
+  if(e.target && e.target.id==='rst-subname' && e.key==='Enter'){ const b=app.querySelector('[data-act="sub-submit"],[data-act="tsub-submit"]'); if(b && !b.disabled) b.click(); return; }
   if(e.key!=='Enter' && e.key!==' ') return;
   const sp=e.target.closest('[data-act="speak"]'); if(sp){ e.preventDefault(); speak(sp.getAttribute('data-text')); return; }
-  const t=e.target.closest('[data-act="remove"],[data-act="sub-remove"]'); if(!t) return;
+  const t=e.target.closest('[data-act="sub-remove"],[data-act="tsub-remove"],[data-act="removeadd"],[data-act="skiponly"],[data-act="unskip"],[data-act="rmask"]'); if(!t) return;
   e.preventDefault(); e.stopPropagation();
-  if(t.getAttribute('data-act')==='sub-remove') subRemove(t.getAttribute('data-id'));
-  else removeItem(t.getAttribute('data-id'));
+  const a=t.getAttribute('data-act'); const did=t.getAttribute('data-id');
+  if(a==='sub-remove') subRemove(did);
+  else if(a==='tsub-remove') tsubRemove(did);
+  else if(a==='removeadd') removeAdd(did);
+  else if(a==='rmask') rmAsk(did);
+  else skipToggle(did); // skiponly / unskip
+  return;
 });
 app.addEventListener('input', e=>{
-  if(e.target.id==='rst-name'){ state.draft.name=e.target.value; const b=document.querySelector('[data-act="add-submit"]'); if(b) b.disabled=!state.draft.name.trim(); }
+  if(e.target.id==='rst-name'){ state.draft.name=e.target.value; document.querySelectorAll('[data-act="add-submit"]').forEach(b=>{ b.disabled=!state.draft.name.trim(); }); }
   else if(e.target.id==='rst-prompt'){ state.draft.prompt=e.target.value; }
-  else if(e.target.id==='rst-subname'){ state.subDraft.name=e.target.value; const b=app.querySelector('[data-act="sub-submit"]'); if(b) b.disabled=!state.subDraft.name.trim(); }
+  else if(e.target.id==='rst-subname'){ state.subDraft.name=e.target.value; app.querySelectorAll('[data-act="sub-submit"],[data-act="tsub-submit"]').forEach(b=>{ b.disabled=!state.subDraft.name.trim(); }); }
+  else if(e.target.id==='rst-askname'){ state.nameDraft=e.target.value; const b=app.querySelector('[data-act="name-save"]'); if(b) b.disabled=!state.nameDraft.trim(); }
   else if(e.target.id==='rst-profname'){ if(state.profileEdit){ state.profileEdit.name=e.target.value; const b=app.querySelector('[data-act="profsave"]'); if(b) b.disabled=!state.profileEdit.name.trim(); } }
 });
 
+app.addEventListener('pointerdown', e=>{ const el=e.target.closest('[data-holdact]'); if(el){ e.preventDefault(); holdStart(el); } });
+window.addEventListener('pointerup', holdCancel);
+window.addEventListener('pointercancel', holdCancel);
+app.addEventListener('pointerleave', holdCancel);
+
 load(); render(); refreshHolidays();
 </script>
+<script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}</script>
 </body>
 </html>
