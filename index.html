@@ -565,7 +565,7 @@ function holidaySet(){ const h=loadHolidays(); return (h&&h.dates)?h.dates:{}; }
    Anchor: if 2 Jan falls Mon/Tue it is in Week 1; if Wed/Thu/Fri those days are
    "Week 0" and Week 1 starts the following Monday; if Sat/Sun, school starts the
    next Monday (= Week 1). Everything else cascades from that Week-1 Monday (M1).  */
-const APP_VERSION='1.3';
+const APP_VERSION='1.6';
 const DAY=86400000;
 function addDays(d,n){ return new Date(d.getTime()+n*DAY); }
 function week1Monday(year){
@@ -1167,8 +1167,8 @@ function render(){
   // 1) Ask for the child's name while the profile is still the default
   if(state.nameAsk){
     h += `<div class="rst-overlay"><div class="rst-modal">`
-       + (state.nameAsk==='new' ? `<h2>Add a child</h2>` : `<h2>What\u2019s your name?</h2>`)
-       + `<p>Personalise your packing and to-do list.<br>Names can still be changed later.</p>`
+       + (state.nameAsk==='new' ? `<h2>Create a new profile</h2>` : `<h2>What\u2019s your name?</h2>`)
+       + `<p>Enter your name and personalise your packing and to-do list.<br>You can change these later, if needed.</p>`
        + `<input class="rst-input" id="rst-askname" placeholder="Enter name" value="${esc(state.nameDraft)}" maxlength="20" autocomplete="off">`
        + `<div class="rst-proflabel">Primary level</div><div class="rst-levels rst-levels-row">`
        + [1,2,3,4,5,6].map(n=>`<button class="rst-level${state.nameLevel===n?' sel':''}" data-act="name-level" data-level="${n}">P${n}</button>`).join('')
