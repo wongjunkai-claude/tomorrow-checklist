@@ -409,6 +409,14 @@ html,body{margin:0;padding:0}
 
 /* version marker in the Help sheet (so you can confirm which build is running) */
 .rst-version{ margin-top:14px; padding-top:12px; border-top:1px solid var(--line); text-align:center; font-size:.78rem; font-weight:800; color:#9AA3B8; letter-spacing:.03em; }
+
+/* date pill in front of each homework item (DD/MMM, when it was set) */
+.rst-datepill{ flex:none; padding:3px 7px; border-radius:8px; background:#E7ECF7; color:var(--navy-soft); font-size:.68rem; font-weight:800; letter-spacing:.02em; white-space:nowrap; }
+.rst-subitem.is-done .rst-datepill{ opacity:.55; }
+
+/* scope buttons under the pencil-case add field */
+.rst-addscope{ display:flex; gap:8px; margin-top:8px; }
+.rst-addscope .rst-primary{ flex:1; justify-content:center; font-size:.85rem; padding:10px 8px; }
 </style>
 </head>
 <body>
@@ -557,7 +565,7 @@ function holidaySet(){ const h=loadHolidays(); return (h&&h.dates)?h.dates:{}; }
    Anchor: if 2 Jan falls Mon/Tue it is in Week 1; if Wed/Thu/Fri those days are
    "Week 0" and Week 1 starts the following Monday; if Sat/Sun, school starts the
    next Monday (= Week 1). Everything else cascades from that Week-1 Monday (M1).  */
-const APP_VERSION='1.0';
+const APP_VERSION='1.3';
 const DAY=86400000;
 function addDays(d,n){ return new Date(d.getTime()+n*DAY); }
 function week1Monday(year){
@@ -724,7 +732,7 @@ function buzz(p){ if(state.sound && navigator.vibrate){ try{ navigator.vibrate(p
 function speak(text){ try{ const sy=window.speechSynthesis; if(!sy||!text) return; sy.cancel();
   const u=new SpeechSynthesisUtterance(text); u.rate=0.95; u.pitch=1.05; u.lang='en-GB'; sy.speak(u); }catch(e){} }
 
-let state = { items:[], template:[], checked:{}, sub:{}, adds:[], skips:[], editing:false, removeAsk:null, removeArm:null, help:false, a2hsShow:false, a2hsStep:0, nameAsk:false, nameDraft:'', nameLevel:1, draft:{name:'',prompt:'',icon:'backpack',open:null}, subDraft:{open:null,name:''}, confirmReset:false, focusName:false, focusSub:false, focusProf:false, sound:true, pop:null, profiles:[], current:null, profileEdit:null };
+let state = { items:[], template:[], checked:{}, sub:{}, adds:[], skips:[], padds:{}, editing:false, removeAsk:null, removeArm:null, help:false, a2hsShow:false, a2hsStep:0, nameAsk:false, nameDraft:'', nameLevel:1, draft:{name:'',prompt:'',icon:'backpack',open:null}, subDraft:{open:null,name:''}, confirmReset:false, focusName:false, focusSub:false, focusProf:false, sound:true, pop:null, profiles:[], current:null, profileEdit:null };
 /* Show the Add-to-Home-Screen nudge only when: not already installed, on a
    mobile browser, served over http(s), and not snoozed within the last month. */
 /* Android/Chrome fires beforeinstallprompt, which we can replay later to trigger the
@@ -792,25 +800,31 @@ function loadProfileData(){
   if(raw){ try{ list = JSON.parse(raw); }catch(e){} }
   if(!Array.isArray(list) || !list.length){ list = JSON.parse(JSON.stringify(DEFAULT_ITEMS)); lsSet(pkey(id,'items'), JSON.stringify(list.map(stripForSave))); }
   state.template = list;
-  let checked = {}, sub = {}, adds = [], skips = [];
+  let checked = {}, sub = {}, adds = [], skips = [], padds = {};
   const rawP = lsGet(pkey(id,'progress'));
   if(rawP){ try{
     const p=JSON.parse(rawP);
-    if(p.date===key){ checked=p.checked||{}; sub=p.sub||{}; adds=p.adds||[]; skips=p.skips||[]; }
+    if(p.date===key){ checked=p.checked||{}; sub=p.sub||{}; adds=p.adds||[]; skips=p.skips||[]; padds=p.padds||{}; }
     else {
       // New planning day: overlay (adds/skips) and checks reset. Unchecked homework
-      // still carries forward into Sat/Sun.
-      const dow = new Date().getUTCDay();
-      if(dow===6 || dow===0){
-        const pc=p.checked||{}, ps=p.sub||{};
-        Object.keys(ps).forEach(itId=>{
-          const carried=(ps[itId]||[]).filter(c=> !pc[c.id]);
-          if(carried.length) sub[itId]=carried.map(c=>({id:c.id, name:c.name}));
+      // rolls forward to the next day, whatever kind of day it is — work set by school
+      // is still due even if tomorrow is a weekend or a holiday. Anything still
+      // unfinished two weeks after it was set is dropped quietly, so the list can't
+      // silently turn into a graveyard.
+      const pc=p.checked||{}, ps=p.sub||{};
+      const cutoff = sgToday().getTime() - 14*DAY;
+      Object.keys(ps).forEach(itId=>{
+        const carried=(ps[itId]||[]).filter(c=>{
+          if(pc[c.id]) return false;                       // already done
+          const t = c.set ? Date.parse(c.set+'T00:00:00Z') : NaN;
+          if(!isNaN(t) && t < cutoff) return false;         // older than two weeks
+          return true;
         });
-      }
+        if(carried.length) sub[itId]=carried.map(c=>({id:c.id, name:c.name, set:c.set}));
+      });
     }
   }catch(e){} }
-  state.checked=checked; state.sub=sub; state.adds=adds; state.skips=skips;
+  state.checked=checked; state.sub=sub; state.adds=adds; state.skips=skips; state.padds=padds;
   rebuild();
   const dW=tomorrow(), tD=dW.getUTCDay(), noSch=noSchoolTomorrow(), bkt=bringBucket();
   const lvlG=effLevel(curProfile());
@@ -822,11 +836,13 @@ function loadProfileData(){
 /* build a display item from a template/added item, filling done from checked/sub */
 function hydrate(it){
   if(it.expandable){
-    const kids=(state.sub[it.id]||[]).map(c=>({id:c.id, name:c.name, done: !!state.checked[c.id]}));
+    const kids=(state.sub[it.id]||[]).map(c=>({id:c.id, name:c.name, set:c.set, done: !!state.checked[c.id]}));
     return {...it, done: !!state.checked[it.id], children: kids};
   }
-  if(it.children && it.children.length){
-    return {...it, children: it.children.map(c=>({...c, done: !!state.checked[c.id]}))};
+  if(Array.isArray(it.children)){
+    const extra=(state.padds&&state.padds[it.id])||[];
+    const kids=[...it.children, ...extra];
+    return {...it, children: kids.map(c=>({...c, done: !!state.checked[c.id]}))};
   }
   return {...it, done: !!state.checked[it.id]};
 }
@@ -847,7 +863,8 @@ function persist(){
     checked: state.checked||{},
     sub: state.sub||{},
     adds: (state.adds||[]).map(stripForSave),
-    skips: state.skips||[]
+    skips: state.skips||[],
+    padds: state.padds||{}
   }));
 }
 
@@ -1040,8 +1057,10 @@ function render(){
           if(hasKids){
             h += `<ul class="rst-sub">`;
             it.children.forEach(c=>{
+              const stamp = stampLabel(c.set);
               h += `<li><button class="rst-subitem${c.done?' is-done':''}" data-act="toggle" data-id="${esc(c.id)}" aria-pressed="${c.done}">`
                  + `<span class="rst-subtick${c.done?' on':''}">${c.done?svg('check',14,3.4):''}</span>`
+                 + (stamp ? `<span class="rst-datepill">${esc(stamp)}</span>` : '')
                  + `<span class="rst-subname">${esc(c.name)}</span>`
                  + `<span class="rst-subx" role="button" tabindex="0" data-act="sub-remove" data-id="${esc(c.id)}" aria-label="Remove ${esc(c.name)}">${svg('x',16,2.6)}</span>`
                  + `</button></li>`;
@@ -1089,10 +1108,14 @@ function render(){
             });
             h += `</ul>`;
             if(state.subDraft.open===it.id){
+              const dis = state.subDraft.name.trim()?'':'disabled';
               h += `<div class="rst-subform">`
                  + `<input class="rst-input" id="rst-subname" placeholder="Add an item" value="${esc(state.subDraft.name)}">`
                  + `<button class="rst-ghost rst-subbtn" data-act="sub-cancel" aria-label="Cancel">${svg('x',18,2.6)}</button>`
-                 + `<button class="rst-primary rst-subbtn" data-act="tsub-submit" data-id="${esc(it.id)}" ${state.subDraft.name.trim()?'':'disabled'}>${svg('plus',18,2.6)} Add</button>`
+                 + `</div>`
+                 + `<div class="rst-addscope">`
+                 + `<button class="rst-primary" data-act="tsub-submit" data-id="${esc(it.id)}" data-scope="today" ${dis}>This time only</button>`
+                 + `<button class="rst-primary" data-act="tsub-submit" data-id="${esc(it.id)}" data-scope="default" ${dis}>Add to default list</button>`
                  + `</div>`;
             } else {
               h += `<button class="rst-subadd" data-act="sub-open" data-id="${esc(it.id)}">${svg('plus',20,2.6)}<span>Add to ${esc(it.name.toLowerCase())}</span></button>`;
@@ -1144,13 +1167,14 @@ function render(){
   // 1) Ask for the child's name while the profile is still the default
   if(state.nameAsk){
     h += `<div class="rst-overlay"><div class="rst-modal">`
-       + `<h2>What\u2019s your name?</h2>`
+       + (state.nameAsk==='new' ? `<h2>Add a child</h2>` : `<h2>What\u2019s your name?</h2>`)
        + `<p>Personalise your packing and to-do list.<br>Names can still be changed later.</p>`
        + `<input class="rst-input" id="rst-askname" placeholder="Enter name" value="${esc(state.nameDraft)}" maxlength="20" autocomplete="off">`
        + `<div class="rst-proflabel">Primary level</div><div class="rst-levels rst-levels-row">`
        + [1,2,3,4,5,6].map(n=>`<button class="rst-level${state.nameLevel===n?' sel':''}" data-act="name-level" data-level="${n}">P${n}</button>`).join('')
        + `</div>`
        + `<div class="rst-modal-btns">`
+       + (state.nameAsk==='new' ? `<button class="rst-ghost" data-act="name-cancel">Cancel</button>` : '')
        + `<button class="rst-primary" data-act="name-save" ${state.nameDraft.trim()?'':'disabled'}>${svg('check',18,2.8)} Save</button>`
        + `</div></div></div>`;
   }
@@ -1233,6 +1257,12 @@ function soundToggle(){ state.sound=!state.sound; lsSet('rst:sound', state.sound
 function helpToggle(){ state.help=!state.help; render(); }
 
 function switchProfile(id){ if(id===state.current) return; persist(); state.current=id; saveProfiles(); state.editing=false; state.profileEdit=null; state.pop=null; loadProfileData(); render(); }
+/* Pick the first palette colour not already taken by another child. */
+function nextColor(){
+  const used=new Set((state.profiles||[]).map(p=>p.color));
+  const free=(PALETTE||[]).map(c=>c.id).find(id=>!used.has(id));
+  return free || 'navy';
+}
 function profileAddOpen(){ state.profileEdit={id:null, name:'', color:'navy', level:1, confirmDel:false}; state.focusProf=true; render(); }
 function profileEditOpen(){ const p=curProfile(); state.profileEdit={id:p.id, name:p.name, color:p.color, level:p.level||1, confirmDel:false}; state.focusProf=true; render(); }
 function profileLevel(n){ if(state.profileEdit){ state.profileEdit.level=n; render(); } }
@@ -1298,9 +1328,17 @@ function addSubmit(sec, scope){
 }
 function subOpen(id){ state.subDraft={open:id,name:''}; state.focusSub=true; render(); }
 function subCancel(){ state.subDraft={open:null,name:''}; render(); }
+/* Homework is stamped with the day it was set, so rolled-over work shows its age. */
+function stampToday(){ return dateKey(sgToday()); }
+const MON_SHORT=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function stampLabel(k){
+  if(!k) return '';
+  const p=String(k).split('-'); if(p.length!==3) return '';
+  return String(parseInt(p[2],10)).padStart(2,'0')+' '+MON_SHORT[parseInt(p[1],10)-1];
+}
 function subSubmit(id){
   const name=state.subDraft.name.trim(); if(!name) return;
-  const kid={id:'sub_'+Date.now()+'_'+Math.random().toString(36).slice(2,7), name};
+  const kid={id:'sub_'+Date.now()+'_'+Math.random().toString(36).slice(2,7), name, set:stampToday()};
   state.sub={...state.sub, [id]:[...(state.sub[id]||[]), kid]};
   delete state.checked[id]; // parent no longer auto-complete
   state.subDraft={open:null,name:''}; rebuild(); commit();
@@ -1310,14 +1348,23 @@ function subRemove(id){
   state.sub=ns; delete state.checked[id]; rebuild(); commit();
 }
 /* container (e.g. Pencil Case) items live in the template, edited permanently */
-function tsubSubmit(id){
+function tsubSubmit(id, scope){
   const name=state.subDraft.name.trim(); if(!name) return;
   const kid={id:'pc_'+Date.now()+'_'+Math.random().toString(36).slice(2,7), name};
-  state.template=state.template.map(t=> t.id===id ? {...t, children:[...(t.children||[]), kid]} : t);
+  if(scope==='default'){
+    state.template=state.template.map(t=> t.id===id ? {...t, children:[...(t.children||[]), kid]} : t);
+  } else {
+    // just for this day — lives in the day's progress, not the permanent list
+    state.padds={...state.padds, [id]:[...(state.padds[id]||[]), kid]};
+  }
   state.subDraft={open:null,name:''}; rebuild(); commit();
 }
 function tsubRemove(childId){
   state.template=state.template.map(t=> (Array.isArray(t.children)&&t.children.length) ? {...t, children:t.children.filter(c=>c.id!==childId)} : t);
+  // also clear it if it was only added for today
+  const pa={...(state.padds||{})};
+  Object.keys(pa).forEach(k=>{ pa[k]=(pa[k]||[]).filter(c=>c.id!==childId); if(!pa[k].length) delete pa[k]; });
+  state.padds=pa;
   delete state.checked[childId]; rebuild(); commit();
 }
 
@@ -1355,7 +1402,7 @@ app.addEventListener('click', e=>{
   else if(act==='sub-open') subOpen(id);
   else if(act==='sub-cancel') subCancel();
   else if(act==='sub-submit') subSubmit(id);
-  else if(act==='tsub-submit') tsubSubmit(id);
+  else if(act==='tsub-submit') tsubSubmit(id, t.getAttribute('data-scope'));
   else if(act==='tsub-remove'){ e.stopPropagation(); tsubRemove(id); }
   else if(act==='speak'){ e.stopPropagation(); speak(t.getAttribute('data-text')); }
   else if(act==='soundtoggle') soundToggle();
@@ -1376,16 +1423,28 @@ app.addEventListener('click', e=>{
   }
   else if(act==='a2hs-close'){ state.a2hsShow=false; state.a2hsStep=0; render(); }
   else if(act==='name-save'){
-    const nm=(state.nameDraft||'').trim();
-    if(nm){ const p=curProfile(); if(p){ p.name=nm; p.level=state.nameLevel||1; p.levelYear=sgToday().getUTCFullYear(); saveProfiles(); } }
+    const nm=(state.nameDraft||'').trim(); if(!nm) return;
+    const yr=sgToday().getUTCFullYear();
+    if(state.nameAsk==='new'){
+      persist();                                    // save the child we're leaving
+      const nid='p'+Date.now().toString(36);
+      state.profiles.push({id:nid, name:nm, color:nextColor(), level:state.nameLevel||1, levelYear:yr});
+      lsSet(pkey(nid,'items'), JSON.stringify(DEFAULT_ITEMS.map(stripForSave)));
+      state.current=nid; saveProfiles();
+      state.editing=false; state.pop=null;
+    } else {
+      const p=curProfile();
+      if(p){ p.name=nm; p.level=state.nameLevel||1; p.levelYear=yr; saveProfiles(); }
+    }
     state.nameAsk=false; state.nameDraft=''; loadProfileData(); render();
   }
+  else if(act==='name-cancel'){ state.nameAsk=false; state.nameDraft=''; render(); }
   else if(act==='name-level'){ state.nameLevel=parseInt(t.getAttribute('data-level'),10)||1; render(); }
   else if(act==='a2hs-never'){ lsSet('rst:a2hs', String(Date.now())); state.a2hsShow=false; state.a2hsStep=0; render(); }
   else if(act==='helpclose'){ state.help=false; render(); }
   else if(act==='profswitch') switchProfile(id);
   else if(act==='profedit') profileEditOpen();
-  else if(act==='profadd') profileAddOpen();
+  else if(act==='profadd'){ state.nameAsk='new'; state.nameDraft=''; state.nameLevel=1; render(); }
   else if(act==='profcancel') profileCancel();
   else if(act==='profcolor') profileColor(t.getAttribute('data-color'));
   else if(act==='proflevel') profileLevel(parseInt(t.getAttribute('data-level'),10));
