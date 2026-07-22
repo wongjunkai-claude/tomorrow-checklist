@@ -417,6 +417,15 @@ html,body{margin:0;padding:0}
 /* scope buttons under the pencil-case add field */
 .rst-addscope{ display:flex; gap:8px; margin-top:8px; }
 .rst-addscope .rst-primary{ flex:1; justify-content:center; font-size:.85rem; padding:10px 8px; }
+
+/* daily reminder prompt */
+.rst-calpreview{ display:flex; align-items:center; gap:9px; padding:11px 13px; border-radius:14px; background:var(--cream); border:2px solid var(--line); font-size:.85rem; font-weight:800; color:var(--navy); line-height:1.3; }
+.rst-calpreview svg{ flex:none; color:var(--navy-soft); }
+input.rst-input[type="time"]{ font-family:'Nunito',sans-serif; font-weight:800; }
+
+/* "Add to Calendar" fits one line; note under the reminder preview */
+.rst-calbtn{ white-space:nowrap; font-size:.88rem; padding-left:10px; padding-right:10px; }
+.rst-calnote{ font-size:.82rem !important; opacity:.85; margin-top:-2px !important; }
 </style>
 </head>
 <body>
@@ -425,7 +434,7 @@ html,body{margin:0;padding:0}
   <div id="app" class="rst-app"></div>
 </div>
 <script>
-const ICONS = {"house": "<path d=\"M3 10.5 12 3l9 7.5\" /> <path d=\"M5 9.5V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.5\" /> <path d=\"M9.5 21v-6h5v6\" />", "info": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <path d=\"M12 16v-4\" /> <path d=\"M12 8h.01\" />", "sun": "<circle cx=\"12\" cy=\"12\" r=\"4\" /> <path d=\"M12 2v2\" /> <path d=\"M12 20v2\" /> <path d=\"m4.93 4.93 1.41 1.41\" /> <path d=\"m17.66 17.66 1.41 1.41\" /> <path d=\"M2 12h2\" /> <path d=\"M20 12h2\" /> <path d=\"m6.34 17.66-1.41 1.41\" /> <path d=\"m19.07 4.93-1.41 1.41\" />", "partyPopper": "<path d=\"M5.8 11.3 2 22l10.7-3.79\" /> <path d=\"M4 3h.01\" /> <path d=\"M22 8h.01\" /> <path d=\"M15 2h.01\" /> <path d=\"M22 20h.01\" /> <path d=\"m22 2-2.24.75a2.9 2.9 0 0 0-1.96 3.12c.1.86-.57 1.63-1.45 1.63h-.38c-.86 0-1.6.6-1.76 1.44L14 10\" /> <path d=\"m22 13-.82-.33c-.86-.34-1.82.2-1.98 1.11c-.11.7-.72 1.22-1.43 1.22H17\" /> <path d=\"m11 2 .33.82c.34.86-.2 1.82-1.11 1.98C9.52 4.9 9 5.52 9 6.23V7\" /> <path d=\"M11 13c1.93 1.93 2.83 4.17 2 5-.83.83-3.07-.07-5-2-1.93-1.93-2.83-4.17-2-5 .83-.83 3.07.07 5 2Z\" />", "check": "<path d=\"M20 6 9 17l-5-5\" />", "plus": "<path d=\"M5 12h14\" /> <path d=\"M12 5v14\" />", "trash2": "<path d=\"M10 11v6\" /> <path d=\"M14 11v6\" /> <path d=\"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6\" /> <path d=\"M3 6h18\" /> <path d=\"M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2\" />", "rotateCcw": "<path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\" /> <path d=\"M3 3v5h5\" />", "pencil": "<path d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\" /> <path d=\"m15 5 4 4\" />", "x": "<path d=\"M18 6 6 18\" /> <path d=\"m6 6 12 12\" />", "backpack": "<path d=\"M4 10a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z\" /> <path d=\"M8 10h8\" /> <path d=\"M8 18h8\" /> <path d=\"M8 22v-6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v6\" /> <path d=\"M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2\" />", "graduationCap": "<path d=\"M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z\" /> <path d=\"M22 10v6\" /> <path d=\"M6 12.5V16a6 3 0 0 0 12 0v-3.5\" />", "pencilRuler": "<path d=\"M13 7 8.7 2.7a2.41 2.41 0 0 0-3.4 0L2.7 5.3a2.41 2.41 0 0 0 0 3.4L7 13\" /> <path d=\"m8 6 2-2\" /> <path d=\"m18 16 2-2\" /> <path d=\"m17 11 4.3 4.3c.94.94.94 2.46 0 3.4l-2.6 2.6c-.94.94-2.46.94-3.4 0L11 17\" /> <path d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\" /> <path d=\"m15 5 4 4\" />", "palette": "<path d=\"M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z\" /> <circle cx=\"13.5\" cy=\"6.5\" r=\".5\" fill=\"currentColor\" /> <circle cx=\"17.5\" cy=\"10.5\" r=\".5\" fill=\"currentColor\" /> <circle cx=\"6.5\" cy=\"12.5\" r=\".5\" fill=\"currentColor\" /> <circle cx=\"8.5\" cy=\"7.5\" r=\".5\" fill=\"currentColor\" />", "bookMarked": "<path d=\"M10 2v8l3-3 3 3V2\" /> <path d=\"M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20\" />", "bookOpen": "<path d=\"M12 7v14\" /> <path d=\"M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z\" />", "thermometer": "<path d=\"M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z\" />", "presentation": "<path d=\"M2 3h20\" /> <path d=\"M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3\" /> <path d=\"m7 21 5-5 5 5\" />", "sandwich": "<path d=\"m2.37 11.223 8.372-6.777a2 2 0 0 1 2.516 0l8.371 6.777\" /> <path d=\"M21 15a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-5.25\" /> <path d=\"M3 15a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h9\" /> <path d=\"m6.67 15 6.13 4.6a2 2 0 0 0 2.8-.4l3.15-4.2\" /> <rect width=\"20\" height=\"4\" x=\"2\" y=\"11\" rx=\"1\" />", "notebook": "<path d=\"M2 6h4\" /> <path d=\"M2 10h4\" /> <path d=\"M2 14h4\" /> <path d=\"M2 18h4\" /> <rect width=\"16\" height=\"20\" x=\"4\" y=\"2\" rx=\"2\" /> <path d=\"M16 2v20\" />", "spellCheck": "<path d=\"m6 16 6-12 6 12\" /> <path d=\"M8 12h8\" /> <path d=\"m16 20 2 2 4-4\" />", "languages": "<path d=\"m5 8 6 6\" /> <path d=\"m4 14 6-6 2-3\" /> <path d=\"M2 5h12\" /> <path d=\"M7 2h1\" /> <path d=\"m22 22-5-10-5 10\" /> <path d=\"M14 18h6\" />", "glassWater": "<path d=\"M5.116 4.104A1 1 0 0 1 6.11 3h11.78a1 1 0 0 1 .994 1.105L17.19 20.21A2 2 0 0 1 15.2 22H8.8a2 2 0 0 1-2-1.79z\" /> <path d=\"M6 12a5 5 0 0 1 6 0 5 5 0 0 0 6 0\" />", "folder": "<path d=\"M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z\" />", "shirt": "<path d=\"M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z\" />", "clipboardCheck": "<rect width=\"8\" height=\"4\" x=\"8\" y=\"2\" rx=\"1\" ry=\"1\" /> <path d=\"M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2\" /> <path d=\"m9 14 2 2 4-4\" />", "library": "<path d=\"m16 6 4 14\" /> <path d=\"M12 6v14\" /> <path d=\"M8 8v12\" /> <path d=\"M4 4v16\" />", "apple": "<path d=\"M12 6.528V3a1 1 0 0 1 1-1h0\" /> <path d=\"M18.237 21A15 15 0 0 0 22 11a6 6 0 0 0-10-4.472A6 6 0 0 0 2 11a15.1 15.1 0 0 0 3.763 10 3 3 0 0 0 3.648.648 5.5 5.5 0 0 1 5.178 0A3 3 0 0 0 18.237 21\" />", "dumbbell": "<path d=\"M17.596 12.768a2 2 0 1 0 2.829-2.829l-1.768-1.767a2 2 0 0 0 2.828-2.829l-2.828-2.828a2 2 0 0 0-2.829 2.828l-1.767-1.768a2 2 0 1 0-2.829 2.829z\" /> <path d=\"m2.5 21.5 1.4-1.4\" /> <path d=\"m20.1 3.9 1.4-1.4\" /> <path d=\"M5.343 21.485a2 2 0 1 0 2.829-2.828l1.767 1.768a2 2 0 1 0 2.829-2.829l-6.364-6.364a2 2 0 1 0-2.829 2.829l1.768 1.767a2 2 0 0 0-2.828 2.829z\" /> <path d=\"m9.6 14.4 4.8-4.8\" />", "footprints": "<path d=\"M4 16v-2.38C4 11.5 2.97 10.5 3 8c.03-2.72 1.49-6 4.5-6C9.37 2 10 3.8 10 5.5c0 3.11-2 5.66-2 8.68V16a2 2 0 1 1-4 0Z\" /> <path d=\"M20 20v-2.38c0-2.12 1.03-3.12 1-5.62-.03-2.72-1.49-6-4.5-6C14.63 6 14 7.8 14 9.5c0 3.11 2 5.66 2 8.68V20a2 2 0 1 0 4 0Z\" /> <path d=\"M16 17h4\" /> <path d=\"M4 13h4\" />", "umbrella": "<path d=\"M12 13v7a2 2 0 0 0 4 0\" /> <path d=\"M12 2v2\" /> <path d=\"M20.992 13a1 1 0 0 0 .97-1.274 10.284 10.284 0 0 0-19.923 0A1 1 0 0 0 3 13z\" />", "glasses": "<circle cx=\"6\" cy=\"15\" r=\"4\" /> <circle cx=\"18\" cy=\"15\" r=\"4\" /> <path d=\"M14 15a2 2 0 0 0-2-2 2 2 0 0 0-2 2\" /> <path d=\"M2.5 13 5 7c.7-1.3 1.4-2 3-2\" /> <path d=\"M21.5 13 19 7c-.7-1.3-1.5-2-3-2\" />", "scissors": "<circle cx=\"6\" cy=\"6\" r=\"3\" /> <path d=\"M8.12 8.12 12 12\" /> <path d=\"M20 4 8.12 15.88\" /> <circle cx=\"6\" cy=\"18\" r=\"3\" /> <path d=\"M14.8 14.8 20 20\" />", "calculator": "<rect width=\"16\" height=\"20\" x=\"4\" y=\"2\" rx=\"2\" /> <line x1=\"8\" x2=\"16\" y1=\"6\" y2=\"6\" /> <line x1=\"16\" x2=\"16\" y1=\"14\" y2=\"18\" /> <path d=\"M16 10h.01\" /> <path d=\"M12 10h.01\" /> <path d=\"M8 10h.01\" /> <path d=\"M12 14h.01\" /> <path d=\"M8 14h.01\" /> <path d=\"M12 18h.01\" /> <path d=\"M8 18h.01\" />", "music": "<path d=\"M9 18V5l12-2v13\" /> <circle cx=\"6\" cy=\"18\" r=\"3\" /> <circle cx=\"18\" cy=\"16\" r=\"3\" />", "map": "<path d=\"M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z\" /> <path d=\"M15 5.764v15\" /> <path d=\"M9 3.236v15\" />", "bus": "<path d=\"M8 6v6\" /> <path d=\"M15 6v6\" /> <path d=\"M2 12h19.6\" /> <path d=\"M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4a2 2 0 0 0-2 2v10h3\" /> <circle cx=\"7\" cy=\"18\" r=\"2\" /> <path d=\"M9 18h5\" /> <circle cx=\"16\" cy=\"18\" r=\"2\" />", "cookie": "<path d=\"M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5\" /> <path d=\"M8.5 8.5v.01\" /> <path d=\"M16 15.5v.01\" /> <path d=\"M12 12v.01\" /> <path d=\"M11 17v.01\" /> <path d=\"M7 14v.01\" />", "ruler": "<path d=\"M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z\" /> <path d=\"m14.5 12.5 2-2\" /> <path d=\"m11.5 9.5 2-2\" /> <path d=\"m8.5 6.5 2-2\" /> <path d=\"m17.5 15.5 2-2\" />", "waterBottle": "<path d=\"M10 2h4a1 1 0 0 1 1 1v2h-6V3a1 1 0 0 1 1-1z\" /> <path d=\"M10 5v2\" /> <path d=\"M14 5v2\" /> <path d=\"M8 9a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v10a3 3 0 0 1-3 3h-2a3 3 0 0 1-3-3z\" /> <path d=\"M8 12h8\" />", "volume2": "<svg class=\"lucide lucide-volume-2\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\" /> <path d=\"M16 9a5 5 0 0 1 0 6\" /> <path d=\"M19.364 18.364a9 9 0 0 0 0-12.728\" />", "volumeX": "<svg class=\"lucide lucide-volume-x\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\" /> <line x1=\"22\" x2=\"16\" y1=\"9\" y2=\"15\" /> <line x1=\"16\" x2=\"22\" y1=\"9\" y2=\"15\" />"};
+const ICONS = {"bell": "<path d=\"M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6\" /> <path d=\"M10.5 20a2 2 0 0 0 3 0\" />", "house": "<path d=\"M3 10.5 12 3l9 7.5\" /> <path d=\"M5 9.5V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.5\" /> <path d=\"M9.5 21v-6h5v6\" />", "info": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <path d=\"M12 16v-4\" /> <path d=\"M12 8h.01\" />", "sun": "<circle cx=\"12\" cy=\"12\" r=\"4\" /> <path d=\"M12 2v2\" /> <path d=\"M12 20v2\" /> <path d=\"m4.93 4.93 1.41 1.41\" /> <path d=\"m17.66 17.66 1.41 1.41\" /> <path d=\"M2 12h2\" /> <path d=\"M20 12h2\" /> <path d=\"m6.34 17.66-1.41 1.41\" /> <path d=\"m19.07 4.93-1.41 1.41\" />", "partyPopper": "<path d=\"M5.8 11.3 2 22l10.7-3.79\" /> <path d=\"M4 3h.01\" /> <path d=\"M22 8h.01\" /> <path d=\"M15 2h.01\" /> <path d=\"M22 20h.01\" /> <path d=\"m22 2-2.24.75a2.9 2.9 0 0 0-1.96 3.12c.1.86-.57 1.63-1.45 1.63h-.38c-.86 0-1.6.6-1.76 1.44L14 10\" /> <path d=\"m22 13-.82-.33c-.86-.34-1.82.2-1.98 1.11c-.11.7-.72 1.22-1.43 1.22H17\" /> <path d=\"m11 2 .33.82c.34.86-.2 1.82-1.11 1.98C9.52 4.9 9 5.52 9 6.23V7\" /> <path d=\"M11 13c1.93 1.93 2.83 4.17 2 5-.83.83-3.07-.07-5-2-1.93-1.93-2.83-4.17-2-5 .83-.83 3.07.07 5 2Z\" />", "check": "<path d=\"M20 6 9 17l-5-5\" />", "plus": "<path d=\"M5 12h14\" /> <path d=\"M12 5v14\" />", "trash2": "<path d=\"M10 11v6\" /> <path d=\"M14 11v6\" /> <path d=\"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6\" /> <path d=\"M3 6h18\" /> <path d=\"M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2\" />", "rotateCcw": "<path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\" /> <path d=\"M3 3v5h5\" />", "pencil": "<path d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\" /> <path d=\"m15 5 4 4\" />", "x": "<path d=\"M18 6 6 18\" /> <path d=\"m6 6 12 12\" />", "backpack": "<path d=\"M4 10a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z\" /> <path d=\"M8 10h8\" /> <path d=\"M8 18h8\" /> <path d=\"M8 22v-6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v6\" /> <path d=\"M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2\" />", "graduationCap": "<path d=\"M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z\" /> <path d=\"M22 10v6\" /> <path d=\"M6 12.5V16a6 3 0 0 0 12 0v-3.5\" />", "pencilRuler": "<path d=\"M13 7 8.7 2.7a2.41 2.41 0 0 0-3.4 0L2.7 5.3a2.41 2.41 0 0 0 0 3.4L7 13\" /> <path d=\"m8 6 2-2\" /> <path d=\"m18 16 2-2\" /> <path d=\"m17 11 4.3 4.3c.94.94.94 2.46 0 3.4l-2.6 2.6c-.94.94-2.46.94-3.4 0L11 17\" /> <path d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\" /> <path d=\"m15 5 4 4\" />", "palette": "<path d=\"M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z\" /> <circle cx=\"13.5\" cy=\"6.5\" r=\".5\" fill=\"currentColor\" /> <circle cx=\"17.5\" cy=\"10.5\" r=\".5\" fill=\"currentColor\" /> <circle cx=\"6.5\" cy=\"12.5\" r=\".5\" fill=\"currentColor\" /> <circle cx=\"8.5\" cy=\"7.5\" r=\".5\" fill=\"currentColor\" />", "bookMarked": "<path d=\"M10 2v8l3-3 3 3V2\" /> <path d=\"M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20\" />", "bookOpen": "<path d=\"M12 7v14\" /> <path d=\"M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z\" />", "thermometer": "<path d=\"M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z\" />", "presentation": "<path d=\"M2 3h20\" /> <path d=\"M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3\" /> <path d=\"m7 21 5-5 5 5\" />", "sandwich": "<path d=\"m2.37 11.223 8.372-6.777a2 2 0 0 1 2.516 0l8.371 6.777\" /> <path d=\"M21 15a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-5.25\" /> <path d=\"M3 15a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h9\" /> <path d=\"m6.67 15 6.13 4.6a2 2 0 0 0 2.8-.4l3.15-4.2\" /> <rect width=\"20\" height=\"4\" x=\"2\" y=\"11\" rx=\"1\" />", "notebook": "<path d=\"M2 6h4\" /> <path d=\"M2 10h4\" /> <path d=\"M2 14h4\" /> <path d=\"M2 18h4\" /> <rect width=\"16\" height=\"20\" x=\"4\" y=\"2\" rx=\"2\" /> <path d=\"M16 2v20\" />", "spellCheck": "<path d=\"m6 16 6-12 6 12\" /> <path d=\"M8 12h8\" /> <path d=\"m16 20 2 2 4-4\" />", "languages": "<path d=\"m5 8 6 6\" /> <path d=\"m4 14 6-6 2-3\" /> <path d=\"M2 5h12\" /> <path d=\"M7 2h1\" /> <path d=\"m22 22-5-10-5 10\" /> <path d=\"M14 18h6\" />", "glassWater": "<path d=\"M5.116 4.104A1 1 0 0 1 6.11 3h11.78a1 1 0 0 1 .994 1.105L17.19 20.21A2 2 0 0 1 15.2 22H8.8a2 2 0 0 1-2-1.79z\" /> <path d=\"M6 12a5 5 0 0 1 6 0 5 5 0 0 0 6 0\" />", "folder": "<path d=\"M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z\" />", "shirt": "<path d=\"M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z\" />", "clipboardCheck": "<rect width=\"8\" height=\"4\" x=\"8\" y=\"2\" rx=\"1\" ry=\"1\" /> <path d=\"M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2\" /> <path d=\"m9 14 2 2 4-4\" />", "library": "<path d=\"m16 6 4 14\" /> <path d=\"M12 6v14\" /> <path d=\"M8 8v12\" /> <path d=\"M4 4v16\" />", "apple": "<path d=\"M12 6.528V3a1 1 0 0 1 1-1h0\" /> <path d=\"M18.237 21A15 15 0 0 0 22 11a6 6 0 0 0-10-4.472A6 6 0 0 0 2 11a15.1 15.1 0 0 0 3.763 10 3 3 0 0 0 3.648.648 5.5 5.5 0 0 1 5.178 0A3 3 0 0 0 18.237 21\" />", "dumbbell": "<path d=\"M17.596 12.768a2 2 0 1 0 2.829-2.829l-1.768-1.767a2 2 0 0 0 2.828-2.829l-2.828-2.828a2 2 0 0 0-2.829 2.828l-1.767-1.768a2 2 0 1 0-2.829 2.829z\" /> <path d=\"m2.5 21.5 1.4-1.4\" /> <path d=\"m20.1 3.9 1.4-1.4\" /> <path d=\"M5.343 21.485a2 2 0 1 0 2.829-2.828l1.767 1.768a2 2 0 1 0 2.829-2.829l-6.364-6.364a2 2 0 1 0-2.829 2.829l1.768 1.767a2 2 0 0 0-2.828 2.829z\" /> <path d=\"m9.6 14.4 4.8-4.8\" />", "footprints": "<path d=\"M4 16v-2.38C4 11.5 2.97 10.5 3 8c.03-2.72 1.49-6 4.5-6C9.37 2 10 3.8 10 5.5c0 3.11-2 5.66-2 8.68V16a2 2 0 1 1-4 0Z\" /> <path d=\"M20 20v-2.38c0-2.12 1.03-3.12 1-5.62-.03-2.72-1.49-6-4.5-6C14.63 6 14 7.8 14 9.5c0 3.11 2 5.66 2 8.68V20a2 2 0 1 0 4 0Z\" /> <path d=\"M16 17h4\" /> <path d=\"M4 13h4\" />", "umbrella": "<path d=\"M12 13v7a2 2 0 0 0 4 0\" /> <path d=\"M12 2v2\" /> <path d=\"M20.992 13a1 1 0 0 0 .97-1.274 10.284 10.284 0 0 0-19.923 0A1 1 0 0 0 3 13z\" />", "glasses": "<circle cx=\"6\" cy=\"15\" r=\"4\" /> <circle cx=\"18\" cy=\"15\" r=\"4\" /> <path d=\"M14 15a2 2 0 0 0-2-2 2 2 0 0 0-2 2\" /> <path d=\"M2.5 13 5 7c.7-1.3 1.4-2 3-2\" /> <path d=\"M21.5 13 19 7c-.7-1.3-1.5-2-3-2\" />", "scissors": "<circle cx=\"6\" cy=\"6\" r=\"3\" /> <path d=\"M8.12 8.12 12 12\" /> <path d=\"M20 4 8.12 15.88\" /> <circle cx=\"6\" cy=\"18\" r=\"3\" /> <path d=\"M14.8 14.8 20 20\" />", "calculator": "<rect width=\"16\" height=\"20\" x=\"4\" y=\"2\" rx=\"2\" /> <line x1=\"8\" x2=\"16\" y1=\"6\" y2=\"6\" /> <line x1=\"16\" x2=\"16\" y1=\"14\" y2=\"18\" /> <path d=\"M16 10h.01\" /> <path d=\"M12 10h.01\" /> <path d=\"M8 10h.01\" /> <path d=\"M12 14h.01\" /> <path d=\"M8 14h.01\" /> <path d=\"M12 18h.01\" /> <path d=\"M8 18h.01\" />", "music": "<path d=\"M9 18V5l12-2v13\" /> <circle cx=\"6\" cy=\"18\" r=\"3\" /> <circle cx=\"18\" cy=\"16\" r=\"3\" />", "map": "<path d=\"M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z\" /> <path d=\"M15 5.764v15\" /> <path d=\"M9 3.236v15\" />", "bus": "<path d=\"M8 6v6\" /> <path d=\"M15 6v6\" /> <path d=\"M2 12h19.6\" /> <path d=\"M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4a2 2 0 0 0-2 2v10h3\" /> <circle cx=\"7\" cy=\"18\" r=\"2\" /> <path d=\"M9 18h5\" /> <circle cx=\"16\" cy=\"18\" r=\"2\" />", "cookie": "<path d=\"M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5\" /> <path d=\"M8.5 8.5v.01\" /> <path d=\"M16 15.5v.01\" /> <path d=\"M12 12v.01\" /> <path d=\"M11 17v.01\" /> <path d=\"M7 14v.01\" />", "ruler": "<path d=\"M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z\" /> <path d=\"m14.5 12.5 2-2\" /> <path d=\"m11.5 9.5 2-2\" /> <path d=\"m8.5 6.5 2-2\" /> <path d=\"m17.5 15.5 2-2\" />", "waterBottle": "<path d=\"M10 2h4a1 1 0 0 1 1 1v2h-6V3a1 1 0 0 1 1-1z\" /> <path d=\"M10 5v2\" /> <path d=\"M14 5v2\" /> <path d=\"M8 9a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v10a3 3 0 0 1-3 3h-2a3 3 0 0 1-3-3z\" /> <path d=\"M8 12h8\" />", "volume2": "<svg class=\"lucide lucide-volume-2\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\" /> <path d=\"M16 9a5 5 0 0 1 0 6\" /> <path d=\"M19.364 18.364a9 9 0 0 0 0-12.728\" />", "volumeX": "<svg class=\"lucide lucide-volume-x\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\" /> <line x1=\"22\" x2=\"16\" y1=\"9\" y2=\"15\" /> <line x1=\"16\" x2=\"22\" y1=\"9\" y2=\"15\" />"};
 const UI = new Set(['sun','partyPopper','check','plus','trash2','rotateCcw','pencil','x']);
 const PICKER_ICONS = Object.keys(ICONS).filter(k=>!UI.has(k));
 
@@ -494,6 +503,77 @@ const PALETTE=[
 ];
 function paletteOf(id){ return PALETTE.find(p=>p.id===id)||PALETTE[0]; }
 const pkey=(id,which)=>`rst:p:${id}:${which}`;
+
+/* ---- Daily "get ready" reminder -------------------------------------------
+   The app can't schedule notifications itself (no server, and an installed PWA
+   can't wake while closed), so it hands the phone a calendar file instead. Each
+   child gets their own repeating event at a time the parent picks.            */
+const CAL_DEFAULT='20:00';
+function calGet(id){ try{ const r=lsGet(pkey(id,'cal')); return r?JSON.parse(r):null; }catch(e){ return null; } }
+function calSet(id,val){ lsSet(pkey(id,'cal'), JSON.stringify(val)); }
+function pad2(n){ return String(n).padStart(2,'0'); }
+/* Build a repeating daily event. Times are "floating" (no timezone) so the
+   reminder fires at that clock time on the parent's own device. */
+function buildICS(name, hhmm){
+  const [hh,mm]=(hhmm||CAL_DEFAULT).split(':').map(n=>parseInt(n,10));
+  const now=new Date();
+  const d=new Date(now.getTime()+8*3600000); // today in SGT
+  const y=d.getUTCFullYear(), mo=d.getUTCMonth()+1, da=d.getUTCDate();
+  const start=`${y}${pad2(mo)}${pad2(da)}T${pad2(hh)}${pad2(mm)}00`;
+  const stamp=now.toISOString().replace(/[-:]/g,'').split('.')[0]+'Z';
+  const uid='rft-'+Math.random().toString(36).slice(2)+'@readyfortomorrow';
+  const title=`${name}: Reminder to get ready for tomorrow`;
+  return [
+    'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Ready for Tomorrow//EN','CALSCALE:GREGORIAN',
+    'BEGIN:VEVENT','UID:'+uid,'DTSTAMP:'+stamp,'DTSTART:'+start,'DURATION:PT15M',
+    'RRULE:FREQ=DAILY','SUMMARY:'+icsEsc(title),
+    'DESCRIPTION:'+icsEsc('Open Ready for Tomorrow and pack together.'),
+    'BEGIN:VALARM','TRIGGER:PT0M','ACTION:DISPLAY','DESCRIPTION:'+icsEsc(title),'END:VALARM',
+    'END:VEVENT','END:VCALENDAR'
+  ].join('\r\n');
+}
+function icsEsc(t){ return String(t).replace(/([,;\\])/g,'\\$1').replace(/\n/g,'\\n'); }
+/* Open the phone's calendar with the event pre-filled, rather than downloading a
+   file. Android/desktop go to the Google Calendar composer; iOS gets a text/calendar
+   document, which Safari hands straight to the Calendar app's "Add Event" screen.
+   Either way the parent reviews it — and can change the time — in the calendar app. */
+function gcalURL(name, hhmm){
+  const [hh,mm]=(hhmm||CAL_DEFAULT).split(':').map(n=>parseInt(n,10));
+  const d=new Date(Date.now()+8*3600000);
+  const y=d.getUTCFullYear(), mo=d.getUTCMonth()+1, da=d.getUTCDate();
+  const st=`${y}${pad2(mo)}${pad2(da)}T${pad2(hh)}${pad2(mm)}00`;
+  const endH=(hh*60+mm+15), eh=Math.floor(endH/60)%24, em=endH%60;
+  const en=`${y}${pad2(mo)}${pad2(da)}T${pad2(eh)}${pad2(em)}00`;
+  const q=new URLSearchParams({
+    action:'TEMPLATE',
+    text:`${name}: Reminder to get ready for tomorrow`,
+    dates:`${st}/${en}`,
+    details:'Open Ready for Tomorrow and pack together.',
+    recur:'RRULE:FREQ=DAILY'
+  });
+  return 'https://calendar.google.com/calendar/render?'+q.toString();
+}
+function openCalendar(name, hhmm){
+  try{
+    if(isIOS()){
+      const uri='data:text/calendar;charset=utf-8,'+encodeURIComponent(buildICS(name,hhmm));
+      window.location.href=uri;
+    } else {
+      window.open(gcalURL(name,hhmm),'_blank');
+    }
+    return true;
+  }catch(e){ return false; }
+}
+/* Nudge again only if they skipped AND have been away for a week or more. */
+function shouldRenudge(){
+  const p=curProfile(); if(!p) return false;
+  const c=calGet(p.id);
+  if(!c || c.added || !c.skipped) return false;
+  const last=lsGet('rst:lastseen');
+  if(!last) return false;
+  const gap=(sgToday().getTime()-Date.parse(last+'T00:00:00Z'))/DAY;
+  return gap>=7;
+}
 function curProfile(){ return state.profiles.find(p=>p.id===state.current)||state.profiles[0]; }
 function saveProfiles(){ lsSet('rst:profiles', JSON.stringify(state.profiles)); lsSet('rst:current', state.current); }
 /* strip an item for saving (drop transient done flags; keep expandable list empty) */
@@ -565,7 +645,7 @@ function holidaySet(){ const h=loadHolidays(); return (h&&h.dates)?h.dates:{}; }
    Anchor: if 2 Jan falls Mon/Tue it is in Week 1; if Wed/Thu/Fri those days are
    "Week 0" and Week 1 starts the following Monday; if Sat/Sun, school starts the
    next Monday (= Week 1). Everything else cascades from that Week-1 Monday (M1).  */
-const APP_VERSION='1.6';
+const APP_VERSION='1.8';
 const DAY=86400000;
 function addDays(d,n){ return new Date(d.getTime()+n*DAY); }
 function week1Monday(year){
@@ -732,7 +812,7 @@ function buzz(p){ if(state.sound && navigator.vibrate){ try{ navigator.vibrate(p
 function speak(text){ try{ const sy=window.speechSynthesis; if(!sy||!text) return; sy.cancel();
   const u=new SpeechSynthesisUtterance(text); u.rate=0.95; u.pitch=1.05; u.lang='en-GB'; sy.speak(u); }catch(e){} }
 
-let state = { items:[], template:[], checked:{}, sub:{}, adds:[], skips:[], padds:{}, editing:false, removeAsk:null, removeArm:null, help:false, a2hsShow:false, a2hsStep:0, nameAsk:false, nameDraft:'', nameLevel:1, draft:{name:'',prompt:'',icon:'backpack',open:null}, subDraft:{open:null,name:''}, confirmReset:false, focusName:false, focusSub:false, focusProf:false, sound:true, pop:null, profiles:[], current:null, profileEdit:null };
+let state = { items:[], template:[], checked:{}, sub:{}, adds:[], skips:[], padds:{}, editing:false, removeAsk:null, removeArm:null, help:false, a2hsShow:false, a2hsStep:0, nameAsk:false, nameDraft:'', nameLevel:1, calAsk:null, calTime:'20:00', draft:{name:'',prompt:'',icon:'backpack',open:null}, subDraft:{open:null,name:''}, confirmReset:false, focusName:false, focusSub:false, focusProf:false, sound:true, pop:null, profiles:[], current:null, profileEdit:null };
 /* Show the Add-to-Home-Screen nudge only when: not already installed, on a
    mobile browser, served over http(s), and not snoozed within the last month. */
 /* Android/Chrome fires beforeinstallprompt, which we can replay later to trigger the
@@ -790,6 +870,11 @@ function load(){
   const cp=profs.find(p=>p.id===state.current)||profs[0];
   state.nameAsk = !!cp && /^Profile \d+$/.test((cp.name||'').trim());
   state.nameDraft=''; state.nameLevel=1;
+  // If they skipped the reminder and have been away a week or more, offer it again.
+  if(!state.nameAsk && shouldRenudge()){
+    state.calAsk=state.current; state.calTime=(calGet(state.current)||{}).time||CAL_DEFAULT;
+  }
+  lsSet('rst:lastseen', dateKey(sgToday()));   // remember this visit
   loadProfileData();
 }
 
@@ -1178,7 +1263,7 @@ function render(){
        + `<button class="rst-primary" data-act="name-save" ${state.nameDraft.trim()?'':'disabled'}>${svg('check',18,2.8)} Save</button>`
        + `</div></div></div>`;
   }
-  // 2) Then the Add-to-Home-Screen nudge (only once the name step is out of the way)
+  // 2) Then the Add-to-Home-Screen nudge (only once the earlier steps are done)
   else if(state.a2hsShow){
     h += `<div class="rst-overlay"><div class="rst-modal">`
        + `<button class="rst-modal-x" data-act="a2hs-close" aria-label="Close">${svg('x',20,2.6)}</button>`;
@@ -1206,6 +1291,19 @@ function render(){
     h += `</div></div>`;
   }
 
+  // 3) Offer a daily reminder in the phone's own calendar
+  else if(state.calAsk){
+    const who=(state.profiles.find(p=>p.id===state.calAsk)||{}).name||'';
+    h += `<div class="rst-overlay"><div class="rst-modal">`
+       + `<h2>Set a daily reminder?</h2>`
+       + `<p>Adds a repeating reminder to your calendar so packing doesn\u2019t get forgotten.</p>`
+       + `<div class="rst-calpreview">${svg('bell',16,2.4)}<span>${esc(who)}: Reminder to get ready for tomorrow</span></div>`
+       + `<p class="rst-calnote">You can set the time in your calendar app.</p>`
+       + `<div class="rst-modal-btns">`
+       + `<button class="rst-ghost" data-act="cal-skip">Skip</button>`
+       + `<button class="rst-primary rst-calbtn" data-act="cal-add">Add to Calendar</button>`
+       + `</div></div></div>`;
+  }
   if(state.help){
     const hi=(t,d)=>`<div class="rst-help-item"><b>${esc(t)}</b><span>${d}</span></div>`;
     h += `<div class="rst-overlay" data-act="helpclose"><div class="rst-sheet" data-act="noop">`
@@ -1436,9 +1534,21 @@ app.addEventListener('click', e=>{
       const p=curProfile();
       if(p){ p.name=nm; p.level=state.nameLevel||1; p.levelYear=yr; saveProfiles(); }
     }
-    state.nameAsk=false; state.nameDraft=''; loadProfileData(); render();
+    state.nameAsk=false; state.nameDraft='';
+    const cp=curProfile();
+    if(cp && !calGet(cp.id)){ state.calAsk=cp.id; state.calTime=CAL_DEFAULT; }
+    loadProfileData(); render();
   }
   else if(act==='name-cancel'){ state.nameAsk=false; state.nameDraft=''; render(); }
+  else if(act==='cal-add'){
+    const id=state.calAsk; const p=state.profiles.find(x=>x.id===id);
+    if(p){ openCalendar(p.name, CAL_DEFAULT); calSet(id,{added:true, time:CAL_DEFAULT}); }
+    state.calAsk=null; render();
+  }
+  else if(act==='cal-skip'){
+    if(state.calAsk) calSet(state.calAsk,{added:false, skipped:dateKey(sgToday())});
+    state.calAsk=null; render();
+  }
   else if(act==='name-level'){ state.nameLevel=parseInt(t.getAttribute('data-level'),10)||1; render(); }
   else if(act==='a2hs-never'){ lsSet('rst:a2hs', String(Date.now())); state.a2hsShow=false; state.a2hsStep=0; render(); }
   else if(act==='helpclose'){ state.help=false; render(); }
