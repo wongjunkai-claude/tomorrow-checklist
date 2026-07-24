@@ -426,6 +426,14 @@ input.rst-input[type="time"]{ font-family:'Nunito',sans-serif; font-weight:800; 
 /* "Add to Calendar" fits one line; note under the reminder preview */
 .rst-calbtn{ white-space:nowrap; font-size:.88rem; padding-left:10px; padding-right:10px; }
 .rst-calnote{ font-size:.82rem !important; opacity:.85; margin-top:-2px !important; }
+
+/* iOS-style settings row: label left, value right, taps to open the native time wheel */
+.rst-timerow{ position:relative; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:13px 15px; border-radius:14px; background:var(--cream); border:2px solid var(--line); cursor:pointer; }
+.rst-timerow-lab{ font-size:.95rem; font-weight:800; color:var(--navy); }
+.rst-timerow-val{ font-size:.95rem; font-weight:800; color:var(--navy-soft); }
+/* the real input sits invisibly over the whole row so a tap anywhere opens the picker */
+.rst-timerow input[type="time"]{ position:absolute; inset:0; width:100%; height:100%; opacity:0; border:0; margin:0; padding:0; background:transparent; -webkit-appearance:none; appearance:none; cursor:pointer; }
+.rst-timerow input[type="time"]::-webkit-calendar-picker-indicator{ position:absolute; inset:0; width:100%; height:100%; opacity:0; cursor:pointer; }
 </style>
 </head>
 <body>
@@ -509,6 +517,8 @@ const pkey=(id,which)=>`rst:p:${id}:${which}`;
    can't wake while closed), so it hands the phone a calendar file instead. Each
    child gets their own repeating event at a time the parent picks.            */
 const CAL_DEFAULT='20:00';
+function time12(hhmm){ let [h,m]=(hhmm||CAL_DEFAULT).split(':').map(n=>parseInt(n,10));
+  const ap=h>=12?'PM':'AM'; h=h%12; if(h===0)h=12; return h+':'+String(m).padStart(2,'0')+' '+ap; }
 function calGet(id){ try{ const r=lsGet(pkey(id,'cal')); return r?JSON.parse(r):null; }catch(e){ return null; } }
 function calSet(id,val){ lsSet(pkey(id,'cal'), JSON.stringify(val)); }
 function pad2(n){ return String(n).padStart(2,'0'); }
@@ -652,7 +662,7 @@ function holidaySet(){ const h=loadHolidays(); return (h&&h.dates)?h.dates:{}; }
    Anchor: if 2 Jan falls Mon/Tue it is in Week 1; if Wed/Thu/Fri those days are
    "Week 0" and Week 1 starts the following Monday; if Sat/Sun, school starts the
    next Monday (= Week 1). Everything else cascades from that Week-1 Monday (M1).  */
-const APP_VERSION='2.2';
+const APP_VERSION='2.3';
 const DAY=86400000;
 function addDays(d,n){ return new Date(d.getTime()+n*DAY); }
 function week1Monday(year){
@@ -1310,7 +1320,9 @@ function render(){
        + `<h2>Set a daily reminder?</h2>`
        + `<p>Adds a repeating reminder to your calendar so packing doesn\u2019t get forgotten.</p>`
        + `<div class="rst-calpreview">${svg('bell',16,2.4)}<span>${esc(who)}: Reminder to get ready for tomorrow</span></div>`
-       + `<p class="rst-calnote">You can set the time in your calendar app.</p>`
+       + `<label class="rst-timerow" for="rst-caltime"><span class="rst-timerow-lab">Reminder time</span>`
+       + `<span class="rst-timerow-val">${esc(time12(state.calTime))}</span>`
+       + `<input type="time" id="rst-caltime" value="${esc(state.calTime)}"></label>`
        + `<div class="rst-modal-btns">`
        + `<button class="rst-ghost" data-act="cal-skip">Skip</button>`
        + `<button class="rst-primary rst-calbtn" data-act="cal-add">Add to Calendar</button>`
@@ -1554,7 +1566,7 @@ app.addEventListener('click', e=>{
   else if(act==='name-cancel'){ state.nameAsk=false; state.nameDraft=''; render(); }
   else if(act==='cal-add'){
     const id=state.calAsk; const p=state.profiles.find(x=>x.id===id);
-    if(p){ openCalendar(p.name, CAL_DEFAULT); calSet(id,{added:true, time:CAL_DEFAULT}); }
+    const t=state.calTime||CAL_DEFAULT; if(p){ openCalendar(p.name, t); calSet(id,{added:true, time:t}); }
     state.calAsk=null; render();
   }
   else if(act==='cal-skip'){
@@ -1600,6 +1612,7 @@ app.addEventListener('input', e=>{
   if(e.target.id==='rst-name'){ state.draft.name=e.target.value; document.querySelectorAll('[data-act="add-submit"]').forEach(b=>{ b.disabled=!state.draft.name.trim(); }); }
   else if(e.target.id==='rst-prompt'){ state.draft.prompt=e.target.value; }
   else if(e.target.id==='rst-subname'){ state.subDraft.name=e.target.value; app.querySelectorAll('[data-act="sub-submit"],[data-act="tsub-submit"]').forEach(b=>{ b.disabled=!state.subDraft.name.trim(); }); }
+  else if(e.target.id==='rst-caltime'){ state.calTime=e.target.value||CAL_DEFAULT; render(); }
   else if(e.target.id==='rst-askname'){ state.nameDraft=e.target.value; const b=app.querySelector('[data-act="name-save"]'); if(b) b.disabled=!state.nameDraft.trim(); }
   else if(e.target.id==='rst-profname'){ if(state.profileEdit){ state.profileEdit.name=e.target.value; const b=app.querySelector('[data-act="profsave"]'); if(b) b.disabled=!state.profileEdit.name.trim(); } }
 });
