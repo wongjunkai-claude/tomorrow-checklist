@@ -556,8 +556,15 @@ function gcalURL(name, hhmm){
 function openCalendar(name, hhmm){
   try{
     if(isIOS()){
-      const uri='data:text/calendar;charset=utf-8,'+encodeURIComponent(buildICS(name,hhmm));
-      window.location.href=uri;
+      // iOS blocks navigating to a data: URL, so serve the .ics as a Blob and open it
+      // in a new tab — Safari then offers to add it to the Calendar app.
+      const blob=new Blob([buildICS(name,hhmm)],{type:'text/calendar;charset=utf-8'});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=url; a.rel='noopener'; a.target='_blank';
+      a.setAttribute('download','ready-for-tomorrow.ics');
+      document.body.appendChild(a); a.click();
+      setTimeout(()=>{ try{document.body.removeChild(a);}catch(e){} URL.revokeObjectURL(url); }, 4000);
     } else {
       window.open(gcalURL(name,hhmm),'_blank');
     }
@@ -645,7 +652,7 @@ function holidaySet(){ const h=loadHolidays(); return (h&&h.dates)?h.dates:{}; }
    Anchor: if 2 Jan falls Mon/Tue it is in Week 1; if Wed/Thu/Fri those days are
    "Week 0" and Week 1 starts the following Monday; if Sat/Sun, school starts the
    next Monday (= Week 1). Everything else cascades from that Week-1 Monday (M1).  */
-const APP_VERSION='1.9';
+const APP_VERSION='2.2';
 const DAY=86400000;
 function addDays(d,n){ return new Date(d.getTime()+n*DAY); }
 function week1Monday(year){
@@ -1314,14 +1321,14 @@ function render(){
     h += `<div class="rst-overlay" data-act="helpclose"><div class="rst-sheet" data-act="noop">`
        + `<div class="rst-sheet-head"><h2>How it works</h2><button class="rst-sheet-x" data-act="helpclose" aria-label="Close">${svg('x',20,2.6)}</button></div>`
        + `<div class="rst-help-body">`
-       + hi('Tick as you go','Tap each item to check it. Finish everything for a little cheer. Reset clears the ticks.')
-       + hi('Today vs Tomorrow','The list is for the next school day. After midnight it reads \u201cToday\u201d, and it refreshes to a fresh day at 8am Singapore time \u2014 so early-morning checking still works.')
-       + hi('Homework','Tap \u201cAdd homework\u201d to list each day\u2019s tasks. Unchecked homework carries through the weekend.')
-       + hi('Editing items','In Edit, you may choose to add or remove items permanently to personalize your default list or just for a day.')
-       + hi('Profiles','Add a child by inputting the name and level this year. You may customise the colour. Once the level is set, it will automatically update to the next level when the new year begins.')
-       + hi('Safe deleting','Deleting a profile or removing a default item needs a press-and-hold.')
-       + hi('School days & holidays','Term breaks, Youth Day, Teachers\u2019 Day, Children\u2019s Day and public holidays are worked out automatically each year \u2014 nothing to update. Use the School Day / Holiday switch if a day differs, and the HBL button for a Home-Based Learning day.')
-       + hi('Saving','Everything saves on this device. On iPhone, add it to your Home Screen (Share \u2192 Add to Home Screen). On Android, use the browser menu (\u22ee) \u2192 Add to Home Screen / Install app.')
+       + hi('Tick as you go','Tap each item to check it off. When everything is done you\u2019ll get a little cheer. Reset clears the ticks to start again.')
+       + hi('Homework','Under Things to Do, tap \u201cAdd homework\u201d to jot down what needs doing, with the date it was set shown beside it. Anything you don\u2019t tick carries over to the next day until it\u2019s done.')
+       + hi('Adding and removing items','Tap Edit, then use the + to add something or the bin to remove it. You\u2019ll be asked whether it\u2019s just for tomorrow or a permanent part of the list \u2014 so you can add a one-off without changing your usual setup.')
+       + hi('School day or holiday','The app already knows term dates, weekends and public holidays, so it sets each day for you. If a day is different, flip the School Day / Holiday switch. For a home-based learning day, tap HBL \u2014 it keeps the things to do but sets aside what to bring.')
+       + hi('Profiles','Tap + to add a child \u2014 just enter their name and level. Each child has their own lists and progress on this device, and their level moves up automatically each new year.')
+       + hi('Daily reminder','You can add a repeating reminder to your phone\u2019s calendar so packing doesn\u2019t get forgotten. Each child can have their own, at a time you choose in your calendar.')
+       + hi('Deleting safely','Removing a default item or deleting a profile needs a press-and-hold, so nothing disappears by accident.')
+       + hi('Keeping it handy','Everything is saved on this device. Add the app to your Home Screen so it\u2019s one tap away and works offline \u2014 on iPhone, tap Share then \u201cAdd to Home Screen\u201d; on Android, use the browser menu.')
        + `<div class="rst-version">Version ${APP_VERSION}</div>`
        + `</div></div></div>`;
   }
