@@ -645,7 +645,7 @@ function holidaySet(){ const h=loadHolidays(); return (h&&h.dates)?h.dates:{}; }
    Anchor: if 2 Jan falls Mon/Tue it is in Week 1; if Wed/Thu/Fri those days are
    "Week 0" and Week 1 starts the following Monday; if Sat/Sun, school starts the
    next Monday (= Week 1). Everything else cascades from that Week-1 Monday (M1).  */
-const APP_VERSION='1.8';
+const APP_VERSION='1.9';
 const DAY=86400000;
 function addDays(d,n){ return new Date(d.getTime()+n*DAY); }
 function week1Monday(year){
@@ -870,8 +870,13 @@ function load(){
   const cp=profs.find(p=>p.id===state.current)||profs[0];
   state.nameAsk = !!cp && /^Profile \d+$/.test((cp.name||'').trim());
   state.nameDraft=''; state.nameLevel=1;
+  // Offer the daily reminder once to existing users too: a real (named) profile
+  // that has never been shown the reminder prompt gets it on this open.
+  if(!state.nameAsk && cp && !calGet(cp.id)){
+    state.calAsk=cp.id; state.calTime=CAL_DEFAULT;
+  }
   // If they skipped the reminder and have been away a week or more, offer it again.
-  if(!state.nameAsk && shouldRenudge()){
+  else if(!state.nameAsk && shouldRenudge()){
     state.calAsk=state.current; state.calTime=(calGet(state.current)||{}).time||CAL_DEFAULT;
   }
   lsSet('rst:lastseen', dateKey(sgToday()));   // remember this visit
